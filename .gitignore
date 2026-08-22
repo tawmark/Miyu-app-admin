@@ -1,0 +1,21 @@
+# Node
+node_modules/
+
+# 部署配置（可能含密钥，不入库）
+deploy-config.json
+
+# 临时校验/调试产物
+_validate_tmp.js
+test-*.js
+test_*
+stderr.txt
+stdout.txt
+___*.md
+
+# 需求文档迭代中间稿（保留最终版）
+prd_smartpage_v*.md
+
+# 系统文件
+Thumbs.db
+.DS_Store
+desktop.ini
