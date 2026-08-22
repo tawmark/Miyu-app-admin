@@ -121,7 +121,7 @@ function main() {
   // 5. 推送
   step('推送到 GitHub');
   try {
-    git('push -u origin main');
+    git('push origin main');
     ok('推送成功');
   } catch (e) {
     fail('推送失败：' + e.message.split('\n').filter(function (l) { return l.trim(); }).slice(-3).join(' | ') + '\n    如为第一次推送，请确认仓库已创建且分支无冲突（可尝试 git pull origin main --rebase 后重试）');
