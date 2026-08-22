@@ -5,7 +5,7 @@
  *   1. 语法校验主文件（提取所有 <script> 块做 JS 语法检查）
  *   2. 同步副本 admin-prototype.html（主文件 = 唯一真源）
  *   3. MD5 校验主文件与副本一致
- *   4. 生成发布产物 dist/（两个 HTML + version.txt，含时间戳与 MD5）
+ *   4. 生成发布产物 dist/（admin-prototype.html + version.txt，含时间戳与 MD5）
  *   5. 若存在 deploy-config.json 且 enable=true，执行 uploadCmd 上传（可选钩子）
  *
  * 部署钩子（可选）：把 deploy-config.example.json 复制为 deploy-config.json，
@@ -104,7 +104,6 @@ function main() {
   // 4. 生成发布产物 dist/
   step('生成发布产物 dist/');
   if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
-  fs.copyFileSync(MAIN, path.join(DIST, '后台原型界面.html'));
   fs.copyFileSync(COPY, path.join(DIST, 'admin-prototype.html'));
   const ver = [
     '版本时间: ' + now(),
@@ -113,7 +112,7 @@ function main() {
     '发布人: 后台管理',
   ].join('\n');
   fs.writeFileSync(path.join(DIST, 'version.txt'), ver, 'utf8');
-  ok('dist/ 已生成（后台原型界面.html / admin-prototype.html / version.txt）');
+  ok('dist/ 已生成（admin-prototype.html / version.txt）');
 
   // 5. 可选部署钩子
   step('部署钩子');

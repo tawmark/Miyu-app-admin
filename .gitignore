@@ -4,6 +4,10 @@ node_modules/
 # 部署配置（可能含密钥，不入库）
 deploy-config.json
 
+# 本地真源与发布入口（仅在本地工作区使用，不入库）
+后台原型界面.html
+一键发布.bat
+
 # 临时校验/调试产物
 _validate_tmp.js
 test-*.js

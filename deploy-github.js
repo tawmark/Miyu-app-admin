@@ -23,13 +23,14 @@ const CYAN = '\x1b[36m';
 const RESET = '\x1b[0m';
 
 // 需要纳入版本管理的文件（均为工作区内的项目产物）
+// 注意：主文件「后台原型界面.html」与「一键发布.bat」仅保留在本地工作区，
+// 通过 .gitignore 排除，不推送到 GitHub。
 const TRACKED = [
-  '后台原型界面.html',
+  'index.html',
   'admin-prototype.html',
   'dist',
   'sync-publish.js',
   'deploy-github.js',
-  '一键发布.bat',
   'deploy-config.example.json',
   'README.md',
   '.gitignore'
