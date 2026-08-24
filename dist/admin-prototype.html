@@ -3553,15 +3553,18 @@ PAGES['rule-billing'] = function() {
           <span style="font-size:12px;color:var(--ink-3)">· 文字聊天价格：在认证审核 / 会员详情中设置（金币/条）</span>
         </div>
       </div>
+      <div class="config-row"><span class="config-label">发送前余额校验</span><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> <span style="font-size:12px;color:var(--ink-3)">男号发消息前校验金币余额，低于本条消息价格则拦截并提示充值</span></div>
     </div>
   </div>
   <div class="card">
-    <div class="card-title">性别差异化计费说明</div>
+    <div class="card-title">计费规则详情</div>
     <div class="config-section">
+      <div class="config-row"><span class="config-label">打招呼</span><span style="font-size:13px;color:var(--green);font-weight:600">免费：自动打招呼与首页打招呼均不扣费</span></div>
+      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px">男号发送消息：按文字聊天计费规则扣金币，发送前校验余额，余额不足无法发送</span></div>
+      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px;color:var(--green);font-weight:600">女号/TS发送消息：免费，不扣费</span></div>
+      <div class="config-row"><span class="config-label">互关免费</span><span style="font-size:13px;color:var(--green);font-weight:600">双方互相关注后，相互发送文字消息免费，双方均不扣费，且不受余额校验限制</span></div>
       <div class="config-row"><span class="config-label">视频通话</span><span style="font-size:13px">男号拨打女号：男号按视频通话计费规则扣金币，女号获得钻石收益</span></div>
       <div class="config-row"><span class="config-label">视频通话</span><span style="font-size:13px;color:var(--green);font-weight:600">女号/TS拨打男号：不扣女号金币，男号无收入</span></div>
-      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px">男号发送消息：按文字聊天计费规则扣金币</span></div>
-      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px;color:var(--green);font-weight:600">女号/TS发送消息：免费，不扣费</span></div>
     </div>
   </div>
   <button class="btn btn-primary">保存配置</button>`;
