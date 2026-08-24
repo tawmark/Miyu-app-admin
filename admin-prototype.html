@@ -2398,11 +2398,11 @@ function closeCallDetail() {
 PAGES['order-chat'] = function() {
   return `
   <div class="page-title">聊天记录</div>
-  <div class="page-desc">查看所有文字聊天订单（男用户付费，5金币/条，每条消息单独成单，与通话/视频计费方式一致）</div>
+  <div class="page-desc">查看所有文字聊天订单（打招呼免费；互关用户间聊天免费，不扣费；男用户向普通对象发消息按聊天价格计费）</div>
   ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'date-range',label:'发送时间'}])}
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>订单编号</th><th>发送方(男)</th><th>接收方</th><th>消息内容</th><th>金币消耗</th><th>发送时间</th><th>操作</th></tr></thead>
+      <thead><tr><th>订单编号</th><th>发送方(男)</th><th>接收方</th><th>消息内容</th><th>金币消耗</th><th>计费状态</th><th>发送时间</th><th>操作</th></tr></thead>
       <tbody>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806001</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td style="color:var(--ink-2)">好的呀，周末有空吗？</td><td>5</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:35:10</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806001','用户A','U001','138****8001','用户B','U002','139****8002','好的呀，周末有空吗？',5,'2026-08-06 15:35:10')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806002</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td style="color:var(--ink-2)">是的，我在城南这边</td><td>5</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:32:48</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806002','用户A','U001','138****8001','用户B','U002','139****8002','是的，我在城南这边',5,'2026-08-06 15:32:48')">详情</button></td></tr>
@@ -3452,7 +3452,7 @@ PAGES['rec-greet'] = function() {
   var female = ['嗨，你好~','在忙吗？','想聊聊天~','很高兴认识你'];
   return `
   <div class="page-title">自动打招呼管理</div>
-  <div class="page-desc">配置自动打招呼预置语句及触发规则</div>
+  <div class="page-desc">配置自动打招呼预置语句及触发规则（打招呼免费，不扣金币）</div>
   <div class="card">
     <div class="card-title">预置语句管理 — 男号快捷语句</div>
     <div class="table-wrapper" style="box-shadow:none;margin-bottom:16px">
