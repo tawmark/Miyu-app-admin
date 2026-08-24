@@ -8,6 +8,12 @@ deploy-config.json
 后台原型界面.html
 一键发布.bat
 
+# 自动发布守护（本地工具，不入库）
+auto-publish.js
+watch-publish.bat
+publish.log
+.autopublish.lock
+
 # 临时校验/调试产物
 _validate_tmp.js
 test-*.js
