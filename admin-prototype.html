@@ -2396,20 +2396,29 @@ function closeCallDetail() {
 
 // --- Order Chat ---
 PAGES['order-chat'] = function() {
+  var mf = window._mutualFree !== false;
+  var statusOpts = mf ? ['正常计费','免费 · 互关','免费 · 打招呼'] : ['正常计费','互关计费','免费 · 打招呼'];
+  // 互关行的「金币消耗 + 计费状态」两列：随互关免费开关联动
+  function mutualCells(price) {
+    if(mf) {
+      return '<td style="color:var(--green);font-weight:600">0</td><td><span style="background:rgba(52,199,89,.14);color:var(--green);font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">免费 · 互关</span></td>';
+    }
+    return '<td>' + price + '</td><td><span style="background:rgba(250,173,20,.15);color:#d48806;font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">互关计费</span></td>';
+  }
   return `
   <div class="page-title">聊天记录</div>
-  <div class="page-desc">查看所有文字聊天订单（打招呼免费；${window._mutualFree ? '互关用户间聊天免费，不扣费' : '互关用户间聊天按正常价格计费'}；男用户向普通对象发消息按聊天价格计费，发送前强制校验余额）</div>
-  ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'select',label:'计费状态',options:['正常计费','免费 · 互关','免费 · 打招呼']},{type:'date-range',label:'发送时间'}])}
+  <div class="page-desc">查看所有文字聊天订单（打招呼免费；${mf ? '互关用户间聊天免费，不扣费' : '互关用户间聊天按正常价格计费'}；男用户向普通对象发消息按聊天价格计费，发送前强制校验余额）</div>
+  ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'select',label:'计费状态',options:statusOpts},{type:'date-range',label:'发送时间'}])}
   <div class="table-wrapper">
     <table>
       <thead><tr><th>订单编号</th><th>发送方(男)</th><th>接收方</th><th>消息内容</th><th>金币消耗</th><th>计费状态</th><th>发送时间</th><th>操作</th></tr></thead>
       <tbody>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806001</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td style="color:var(--ink-2)">好的呀，周末有空吗？</td><td>5</td><td><span style="color:var(--ink-2)">正常计费</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:35:10</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806001','用户A','U001','138****8001','用户B','U002','139****8002','好的呀，周末有空吗？',5,'2026-08-06 15:35:10','normal')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806002</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td style="color:var(--ink-2)">是的，我在城南这边</td><td>5</td><td><span style="color:var(--ink-2)">正常计费</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:32:48</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806002','用户A','U001','138****8001','用户B','U002','139****8002','是的，我在城南这边',5,'2026-08-06 15:32:48','normal')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CH20260806003</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${userTag('用户D','女','U004','136****8004')}</td><td style="color:var(--ink-2)">可以呀，你也是这个城市的吗？</td><td style="color:var(--green);font-weight:600">0</td><td><span style="background:rgba(52,199,89,.14);color:var(--green);font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">免费 · 互关</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:28:42</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806003','用户C','U003','137****8003','用户D','U004','136****8004','可以呀，你也是这个城市的吗？',0,'2026-08-06 14:28:42','mutual')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CH20260806003</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${userTag('用户D','女','U004','136****8004')}</td><td style="color:var(--ink-2)">可以呀，你也是这个城市的吗？</td>${mutualCells(5)}<td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:28:42</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806003','用户C','U003','137****8003','用户D','U004','136****8004','可以呀，你也是这个城市的吗？',${mf ? 0 : 5},'2026-08-06 14:28:42','mutual')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806004</td><td>${userTag('用户E','男','U005','135****8005')}</td><td>${userTag('用户F','女','U006','134****8006')}</td><td style="color:var(--ink-2)">你好，可以认识一下吗？</td><td style="color:var(--green);font-weight:600">0</td><td><span style="background:rgba(52,199,89,.14);color:var(--green);font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">免费 · 打招呼</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:48:05</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806004','用户E','U005','135****8005','用户F','U006','134****8006','你好，可以认识一下吗？',0,'2026-08-06 13:48:05','greet')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806005</td><td>${userTag('用户G','男','U007','133****8007')}</td><td>${userTag('用户H','女','U008','132****8008')}</td><td style="color:var(--ink-2)">那挺近的，有空可以出来玩</td><td>5</td><td><span style="color:var(--ink-2)">正常计费</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:05:15</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806005','用户G','U007','133****8007','用户H','U008','132****8008','那挺近的，有空可以出来玩',5,'2026-08-06 13:05:15','normal')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CH20260806006</td><td>${userTag('用户I','男','U009','131****8009')}</td><td>${userTag('用户J','女','U010','130****8010')}</td><td style="color:var(--ink-2)">周末要不要一起吃饭？</td><td style="color:var(--green);font-weight:600">0</td><td><span style="background:rgba(52,199,89,.14);color:var(--green);font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">免费 · 互关</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:22:48</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806006','用户I','U009','131****8009','用户J','U010','130****8010','周末要不要一起吃饭？',0,'2026-08-06 11:22:48','mutual')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CH20260806006</td><td>${userTag('用户I','男','U009','131****8009')}</td><td>${userTag('用户J','女','U010','130****8010')}</td><td style="color:var(--ink-2)">周末要不要一起吃饭？</td>${mutualCells(5)}<td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:22:48</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806006','用户I','U009','131****8009','用户J','U010','130****8010','周末要不要一起吃饭？',${mf ? 0 : 5},'2026-08-06 11:22:48','mutual')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806007</td><td>${userTag('用户K','男','U011','188****8011')}</td><td>${userTag('用户L','女','U012','187****8012')}</td><td style="color:var(--ink-2)">看到你的动态了，很有意思</td><td>5</td><td><span style="color:var(--ink-2)">正常计费</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 10:18:30</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806007','用户K','U011','188****8011','用户L','U012','187****8012','看到你的动态了，很有意思',5,'2026-08-06 10:18:30','normal')">详情</button></td></tr>
       </tbody>
     </table>
@@ -2425,11 +2434,16 @@ function showChatDetail(sessionId, senderName, senderId, senderPhone, receiverNa
     document.body.appendChild(overlay);
   }
   var billDesc = billType === 'greet' ? '免费 · 打招呼（自动打招呼/首页打招呼不扣费）'
-    : billType === 'mutual' ? (window._mutualFree ? '免费 · 互关（双方互相关注，聊天免费，不受余额校验限制）' : '按正常价格计费（互关免费已关闭）')
+    : billType === 'mutual' ? (window._mutualFree ? '免费 · 互关（双方互相关注，聊天免费，不受余额校验限制）' : '互关计费（互关免费已关闭，互相关注用户间按正常价格计费）')
     : '发送方付费（男号发送，发送前强制校验余额）';
-  var coinTxt = coins === 0
-    ? '<span style="color:var(--green);font-weight:600">0 金币（免费）</span>'
-    : coins + ' 金币';
+var coinTxt;
+if(billType === 'mutual' && !window._mutualFree) {
+  coinTxt = coins + ' 金币（互关免费已关闭，按正常价格计费）';
+} else if(coins === 0) {
+  coinTxt = '<span style="color:var(--green);font-weight:600">0 金币（免费）</span>';
+} else {
+  coinTxt = coins + ' 金币';
+}
   overlay.innerHTML = '<div class="approve-modal" style="width:520px">'
     + '<div class="approve-modal-header"><span>聊天详情</span><button class="reject-modal-close" onclick="closeChatDetail()">&times;</button></div>'
     + '<div class="approve-modal-body">'
