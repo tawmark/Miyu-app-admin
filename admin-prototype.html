@@ -2398,8 +2398,8 @@ function closeCallDetail() {
 PAGES['order-chat'] = function() {
   return `
   <div class="page-title">聊天记录</div>
-  <div class="page-desc">查看所有文字聊天订单（打招呼免费；互关用户间聊天免费，不扣费；男用户向普通对象发消息按聊天价格计费）</div>
-  ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'date-range',label:'发送时间'}])}
+  <div class="page-desc">查看所有文字聊天订单（打招呼免费；${window._mutualFree ? '互关用户间聊天免费，不扣费' : '互关用户间聊天按正常价格计费'}；男用户向普通对象发消息按聊天价格计费，发送前强制校验余额）</div>
+  ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'select',label:'计费状态',options:['正常计费','免费 · 互关','免费 · 打招呼']},{type:'date-range',label:'发送时间'}])}
   <div class="table-wrapper">
     <table>
       <thead><tr><th>订单编号</th><th>发送方(男)</th><th>接收方</th><th>消息内容</th><th>金币消耗</th><th>计费状态</th><th>发送时间</th><th>操作</th></tr></thead>
@@ -2425,8 +2425,8 @@ function showChatDetail(sessionId, senderName, senderId, senderPhone, receiverNa
     document.body.appendChild(overlay);
   }
   var billDesc = billType === 'greet' ? '免费 · 打招呼（自动打招呼/首页打招呼不扣费）'
-    : billType === 'mutual' ? '免费 · 互关（双方互相关注，聊天免费，不受余额校验限制）'
-    : '发送方付费（男号发送，发送前校验余额）';
+    : billType === 'mutual' ? (window._mutualFree ? '免费 · 互关（双方互相关注，聊天免费，不受余额校验限制）' : '按正常价格计费（互关免费已关闭）')
+    : '发送方付费（男号发送，发送前强制校验余额）';
   var coinTxt = coins === 0
     ? '<span style="color:var(--green);font-weight:600">0 金币（免费）</span>'
     : coins + ' 金币';
@@ -3552,16 +3552,17 @@ PAGES['rule-billing'] = function() {
           <span style="font-size:12px;color:var(--ink-3)">· 文字聊天价格：在认证审核 / 会员详情中设置（金币/条）</span>
         </div>
       </div>
-      <div class="config-row"><span class="config-label">发送前余额校验</span><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> <span style="font-size:12px;color:var(--ink-3)">男号发消息前校验金币余额，低于本条消息价格则拦截并提示充值</span></div>
+      <div class="config-row"><span class="config-label">发送前余额校验</span><span style="font-size:12px;color:var(--green);font-weight:600">强制开启（不可关闭）</span> <span style="font-size:12px;color:var(--ink-3)">消息收费时必定校验：男号发送收费消息前自动校验金币余额，低于本条消息价格则拦截发送并提示充值</span></div>
+      <div class="config-row"><span class="config-label">互关免费</span><label class="switch"><input type="checkbox" id="mutual-free-switch" checked onchange="toggleMutualFree(this)"><span class="switch-slider"></span></label> <span style="font-size:12px;color:var(--ink-3)">开启：互相关注用户间聊天免费；关闭：按正常价格计费</span></div>
     </div>
   </div>
   <div class="card">
     <div class="card-title">计费规则详情</div>
     <div class="config-section">
       <div class="config-row"><span class="config-label">打招呼</span><span style="font-size:13px;color:var(--green);font-weight:600">免费：自动打招呼与首页打招呼均不扣费</span></div>
-      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px">男号发送消息：按文字聊天计费规则扣金币，发送前校验余额，余额不足无法发送</span></div>
-      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px;color:var(--green);font-weight:600">女号/TS发送消息：免费，不扣费</span></div>
-      <div class="config-row"><span class="config-label">互关免费</span><span style="font-size:13px;color:var(--green);font-weight:600">双方互相关注后，相互发送文字消息免费，双方均不扣费，且不受余额校验限制</span></div>
+      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px">男号发送消息：按文字聊天计费规则扣金币，发送前强制校验余额（不可关闭），低于本条消息价格则拦截并向男号提示充值</span></div>
+      <div class="config-row"><span class="config-label">女号/TS发送消息</span><span style="font-size:13px;color:var(--green);font-weight:600">免费，不扣费</span></div>
+      <div class="config-row"><span class="config-label">互关免费</span><span id="mutual-free-desc" style="font-size:13px;color:var(--green);font-weight:600">双方互相关注后，相互发送文字消息免费，双方均不扣费，且不受余额校验限制</span></div>
       <div class="config-row"><span class="config-label">视频通话</span><span style="font-size:13px">男号拨打女号：男号按视频通话计费规则扣金币，女号获得钻石收益</span></div>
       <div class="config-row"><span class="config-label">视频通话</span><span style="font-size:13px;color:var(--green);font-weight:600">女号/TS拨打男号：不扣女号金币，男号无收入</span></div>
     </div>
@@ -3577,6 +3578,23 @@ function switchCallBillingUnit(sel) {
   for(var i = 0; i < ids.length; i++) {
     var el = document.getElementById(ids[i]);
     if(el) el.textContent = unit;
+  }
+}
+
+// --- Mutual Free Switch ---
+window._mutualFree = true;
+function toggleMutualFree(chk) {
+  window._mutualFree = chk.checked;
+  var desc = document.getElementById('mutual-free-desc');
+  if(!desc) return;
+  if(chk.checked) {
+    desc.style.color = 'var(--green)';
+    desc.style.fontWeight = '600';
+    desc.textContent = '双方互相关注后，相互发送文字消息免费，双方均不扣费，且不受余额校验限制';
+  } else {
+    desc.style.color = 'var(--ink-2)';
+    desc.style.fontWeight = '400';
+    desc.textContent = '互关免费已关闭：互相关注用户间发送文字消息按正常价格计费，男号发送前同样强制校验余额';
   }
 }
 
