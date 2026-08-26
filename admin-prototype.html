@@ -2338,7 +2338,7 @@ PAGES['order-call'] = function() {
   return `
   <div class="page-title">通话记录</div>
   <div class="page-desc">查看所有视频通话订单</div>
-  ${filterBar([{label:'订单编号'},{label:'拨打方昵称/ID/手机号'},{label:'接听方昵称/ID/手机号'},{type:'select',label:'状态',options:['通话中','已结束','未接听','已取消','被拒绝']},{type:'date-range',label:'创建时间'}])}
+  ${filterBar([{label:'订单编号'},{label:'拨打方昵称/ID/手机号'},{label:'接听方昵称/ID/手机号'},{type:'select',label:'状态',options:['已结束','未接听','已取消','已挂断']},{type:'date-range',label:'创建时间'}])}
   <div class="table-wrapper">
     <table>
       <thead><tr><th>订单编号</th><th>拨打方</th><th>接听方</th><th>通话时长</th><th>金币数量</th><th>创建时间</th><th>状态</th><th>操作</th></tr></thead>
@@ -2347,9 +2347,9 @@ PAGES['order-call'] = function() {
         <tr><td style="font-family:monospace;font-size:12px">CO20260806002</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${userTag('用户D','女','U004','136****8004')}</td><td>12分05秒</td><td>120</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:15:10</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806002','用户C','U003','137****8003','用户D','U004','136****8004','12分05秒','120','2026-08-06 13:15:10','已结束',5.0,4.2)">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CO20260806003</td><td>${userTag('用户E','男','U005','135****8005')}</td><td>${userTag('用户F','女','U006','134****8006')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 12:00:00</td><td>${badge('未接听','warning')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806003','用户E','U005','135****8005','用户F','U006','134****8006','0分00秒','0','2026-08-06 12:00:00','未接听')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CO20260806004</td><td>${userTag('用户H','男','U007','133****8007')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td>8分30秒</td><td>85</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:45:33</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806004','用户H','U007','133****8007','用户B','U002','139****8002','8分30秒','85','2026-08-06 11:45:33','已结束',4.0,4.7)">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806005</td><td>${userTag('用户I','男','U008','132****8008')}</td><td>${userTag('用户J','女','U009','131****8009')}</td><td>3分15秒</td><td>32</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 10:20:18</td><td>${badge('通话中','info')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806005','用户I','U008','132****8008','用户J','U009','131****8009','3分15秒','32','2026-08-06 10:20:18','通话中')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806005</td><td>${userTag('用户I','男','U008','132****8008')}</td><td>${userTag('用户J','女','U009','131****8009')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 10:20:18</td><td>${badge('已挂断','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806005','用户I','U008','132****8008','用户J','U009','131****8009','0分00秒','0','2026-08-06 10:20:18','已挂断')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CO20260806006</td><td>${userTag('用户K','男','U010','130****8010')}</td><td>${userTag('用户L','女','U011','188****8011')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 09:30:00</td><td>${badge('已取消','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806006','用户K','U010','130****8010','用户L','U011','188****8011','0分00秒','0','2026-08-06 09:30:00','已取消')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806007</td><td>${userTag('用户M','男','U012','187****8012')}</td><td>${userTag('用户N','女','U013','186****8013')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 08:15:42</td><td>${badge('被拒绝','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806007','用户M','U012','187****8012','用户N','U013','186****8013','0分00秒','0','2026-08-06 08:15:42','被拒绝')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806007</td><td>${userTag('用户M','男','U012','187****8012')}</td><td>${userTag('用户N','女','U013','186****8013')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 08:15:42</td><td>${badge('已挂断','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806007','用户M','U012','187****8012','用户N','U013','186****8013','0分00秒','0','2026-08-06 08:15:42','已挂断')">详情</button></td></tr>
       </tbody>
     </table>
     ${pagination()}
@@ -2364,10 +2364,13 @@ function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, 
     document.body.appendChild(overlay);
   }
   var statusBadge = status === '已结束' ? '<span style="color:var(--ink-2)">已结束</span>'
-    : status === '通话中' ? '<span style="color:var(--primary)">通话中</span>'
+    : status === '已挂断' ? '<span style="color:var(--red)">已挂断</span>'
     : status === '未接听' ? '<span style="color:var(--orange)">未接听</span>'
-    : status === '已取消' ? '<span style="color:var(--ink-2)">已取消</span>'
-    : '<span style="color:var(--red)">被拒绝</span>';
+    : '<span style="color:var(--ink-2)">已取消</span>';
+  var statusNote = status === '已结束' ? '两人已视频通话互动过（接听方已接听）'
+    : status === '已挂断' ? '对方不接来电，直接选择挂断来电'
+    : status === '未接听' ? '拨打对方超时无人接听'
+    : '拨打方本人还没等对方接通就取消来电';
   var ratingRow = (label, rating) => rating !== undefined
     ? '<tr><td style="color:var(--ink-3);width:120px">' + label + '</td><td><span style="color:#f59e0b">★</span> ' + rating.toFixed(1) + ' 分</td></tr>'
     : '<tr><td style="color:var(--ink-3);width:120px">' + label + '</td><td style="color:var(--ink-3)">—</td></tr>';
@@ -2382,6 +2385,7 @@ function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, 
     + '<tr><td style="color:var(--ink-3)">金币消耗</td><td>' + coins + ' 金币</td></tr>'
     + '<tr><td style="color:var(--ink-3)">创建时间</td><td style="font-family:monospace">' + time + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">状态</td><td>' + statusBadge + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3)">状态说明</td><td style="color:var(--ink-3);font-size:12px">' + statusNote + '</td></tr>'
     + ratingRow('拨打方评分', callerRating)
     + ratingRow('接听方评分', calleeRating)
     + '</table>'
