@@ -1101,8 +1101,8 @@ PAGES['member-detail'] = function() {
     ['RO20260807001','充值','App充值','支付宝','收入','+1,000','2,250','—','¥98 · 充980 · 赠20 · 支付成功','2026-08-07 10:23:15'],
     ['GC20260806002','通话消耗','—','—','支出','-320','1,250','用户B (ID:10002)','视频通话 16分钟','2026-08-06 21:45:30'],
     ['GC20260806001','送礼','—','—','支出','-180','1,570','用户B (ID:10002)','送出 玫瑰 x9','2026-08-06 15:12:08'],
-    ['GC20260805004','文字聊天','—','—','支出','-20','1,750','用户C (ID:10003)','文字聊天 10条','2026-08-05 22:30:10'],
-    ['GC20260805003','签到奖励','—','—','收入','+20','1,770','—','连续签到第3天奖励','2026-08-05 08:00:00'],
+    ['GC20260805004','文字聊天','—','—','支出','-20','1,733','用户C (ID:10003)','文字聊天 10条','2026-08-05 22:30:10'],
+    ['GC20260805003','签到奖励','—','—','收入','+3','1,753','—','每日签到奖励（Lv3）','2026-08-05 08:00:00'],
     ['GC20260805002','视频速配','—','—','支出','-50','1,730','用户D (ID:10004)','速配通话 5分钟','2026-08-05 14:20:45'],
     ['RO20260805001','充值','官网充值','支付宝','收入','+500','1,780','—','¥50 · 充500 · 赠0 · 支付成功','2026-08-05 09:15:22'],
     ['GC20260804002','通话消耗','—','—','支出','-260','1,280','用户D (ID:10004)','视频通话 13分钟','2026-08-04 22:10:18'],
@@ -2859,8 +2859,8 @@ PAGES['market-signin'] = function() {
     <div class="config-section">
       <div class="config-row" style="align-items:flex-start"><span class="config-label">每日签到金币奖励</span>
         <div style="flex:1;max-width:640px">
-          <div style="font-size:13px">按成长等级发放每日固定奖励：<span style="font-weight:600">奖励金币 = 成长等级数</span> <span style="font-size:12px;color:var(--ink-3)">（Lv1=1 金币/天，Lv2=2 金币/天，Lv3=3 金币/天…以此类推）</span></div>
-          <div style="margin-top:6px;font-size:12px;color:var(--ink-3)">男号 Lv5 每日签到固定获得 5 金币，等级提升后奖励自动随等级增加，无需逐级配置。</div>
+          <div style="font-size:13px">按用户成长等级逐级配置每日固定奖励，金币数量可后台自定义：<span style="font-size:12px;color:var(--ink-3)">（默认 Lv1=1 金币/天，Lv2=2 金币/天…可随时修改）</span></div>
+          <div style="margin-top:6px;font-size:12px;color:var(--ink-3)">例：男号 Lv5 每日签到固定获得 5 金币；在下方「等级金币奖励配置」中修改对应等级的金币数量即可。</div>
           <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
             <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv1 → 1 金币</span>
             <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv2 → 2 金币</span>
@@ -2876,63 +2876,38 @@ PAGES['market-signin'] = function() {
       </div>
       <div class="config-row"><span class="config-label">女性/TS 签到</span><span style="font-size:13px;color:var(--ink-3)">无签到奖励，前台隐藏签到入口（女号/TS 不显示签到功能）</span></div>
     </div>
-    <div class="card-title" style="margin-top:16px;font-size:13px">连续签到梯度奖励 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（仅男号适用，女号/TS 无签到入口）</span></div>
+    <div class="card-title" style="margin-top:16px;font-size:13px">等级金币奖励配置 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（男号适用，女号/TS 无签到入口）</span></div>
       <div class="table-wrapper" style="box-shadow:none">
         <table>
-          <thead><tr><th>累计签到天数</th><th>额外奖励金币</th><th>性别适用</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr><td>3天</td><td>20</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(3, 20, ['男'])">编辑</button></td></tr>
-            <tr><td>7天</td><td>50</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(7, 50, ['男'])">编辑</button></td></tr>
-            <tr><td>15天</td><td>100</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(15, 100, ['男'])">编辑</button></td></tr>
-            <tr><td>30天</td><td>300</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(30, 300, ['男'])">编辑</button></td></tr>
+          <thead><tr><th>成长等级</th><th style="width:220px">每日奖励金币</th><th style="width:100px">性别适用</th><th style="width:110px">操作</th></tr></thead>
+          <tbody id="signin-level-tbody">
+            <tr><td>Lv1</td><td><input class="form-input" style="width:80px" value="1"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv2</td><td><input class="form-input" style="width:80px" value="2"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv3</td><td><input class="form-input" style="width:80px" value="3"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv4</td><td><input class="form-input" style="width:80px" value="4"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv5</td><td><input class="form-input" style="width:80px" value="5"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv6</td><td><input class="form-input" style="width:80px" value="6"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv7</td><td><input class="form-input" style="width:80px" value="7"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv8</td><td><input class="form-input" style="width:80px" value="8"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
           </tbody>
         </table>
       </div>
-      <div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="showSigninGradientModal()">+ 添加梯度</button> <button class="btn btn-primary" style="margin-left:8px">保存设置</button></div>
+      <div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="addSigninLevel()">+ 添加等级</button> <button class="btn btn-primary" style="margin-left:8px">保存设置</button></div>
     </div>
   </div>`;
 };
 
-// --- Sign-in Gradient Modal ---
-function showSigninGradientModal(days, coins, genders) {
-  var overlay = document.getElementById('signin-gradient-overlay');
-  if(!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'signin-gradient-overlay';
-    overlay.className = 'approve-overlay';
-    document.body.appendChild(overlay);
-  }
-  var isEdit = (days !== undefined && days !== null);
-  genders = genders || ['男'];
-  var checked = function(g) { return genders.indexOf(g) >= 0; };
-  overlay.innerHTML = '<div class="approve-modal" style="width:500px">'
-    + '<div class="approve-modal-header"><span>' + (isEdit ? '编辑梯度奖励' : '添加梯度奖励') + '</span><button class="reject-modal-close" onclick="closeSigninGradientModal()">&times;</button></div>'
-    + '<div class="approve-modal-body">'
-    + '<div style="margin-bottom:16px"><strong>累计签到天数：</strong><input class="form-input" style="width:120px" value="' + (isEdit ? days : '') + '" placeholder="例如：3"></div>'
-    + '<div style="margin-bottom:16px"><strong>额外奖励金币：</strong><input class="form-input" style="width:120px" value="' + (isEdit ? coins : '') + '" placeholder="例如：20"></div>'
-    + '<div style="margin-bottom:16px"><strong>性别适用：</strong><div style="display:flex;gap:12px;align-items:center">'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('男') ? 'checked' : '') + '> 男</label>'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('女') ? 'checked' : '') + '> 女</label>'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('TS') ? 'checked' : '') + '> TS</label>'
-    + '</div></div>'
-    + '</div>'
-    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="closeSigninGradientModal()">确认</button><button class="btn btn-default" onclick="closeSigninGradientModal()">取消</button></div></div>';
-  overlay.classList.add('show');
-}
-
-function closeSigninGradientModal() {
-  var overlay = document.getElementById('signin-gradient-overlay');
-  if(overlay) {
-    overlay.classList.remove('show');
-  }
+// --- Sign-in Level Reward ---
+function addSigninLevel() {
+  var tbody = document.getElementById('signin-level-tbody');
+  if(!tbody) return;
+  var next = tbody.querySelectorAll('tr').length + 1;
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td>Lv' + next + '</td>'
+    + '<td><input class="form-input" style="width:80px" value="0"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td>'
+    + '<td><span class="gender-tag">男</span></td>'
+    + '<td><button class="btn-action btn-action-ban" onclick="this.closest(\'tr\').remove()">删除</button></td>';
+  tbody.appendChild(tr);
 }
 
 // --- UV Dimension Switch ---

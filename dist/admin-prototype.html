@@ -1101,8 +1101,8 @@ PAGES['member-detail'] = function() {
     ['RO20260807001','充值','App充值','支付宝','收入','+1,000','2,250','—','¥98 · 充980 · 赠20 · 支付成功','2026-08-07 10:23:15'],
     ['GC20260806002','通话消耗','—','—','支出','-320','1,250','用户B (ID:10002)','视频通话 16分钟','2026-08-06 21:45:30'],
     ['GC20260806001','送礼','—','—','支出','-180','1,570','用户B (ID:10002)','送出 玫瑰 x9','2026-08-06 15:12:08'],
-    ['GC20260805004','文字聊天','—','—','支出','-20','1,750','用户C (ID:10003)','文字聊天 10条','2026-08-05 22:30:10'],
-    ['GC20260805003','签到奖励','—','—','收入','+20','1,770','—','连续签到第7天奖励','2026-08-05 08:00:00'],
+    ['GC20260805004','文字聊天','—','—','支出','-20','1,733','用户C (ID:10003)','文字聊天 10条','2026-08-05 22:30:10'],
+    ['GC20260805003','签到奖励','—','—','收入','+3','1,753','—','每日签到奖励（Lv3）','2026-08-05 08:00:00'],
     ['GC20260805002','视频速配','—','—','支出','-50','1,730','用户D (ID:10004)','速配通话 5分钟','2026-08-05 14:20:45'],
     ['RO20260805001','充值','官网充值','支付宝','收入','+500','1,780','—','¥50 · 充500 · 赠0 · 支付成功','2026-08-05 09:15:22'],
     ['GC20260804002','通话消耗','—','—','支出','-260','1,280','用户D (ID:10004)','视频通话 13分钟','2026-08-04 22:10:18'],
@@ -2338,7 +2338,7 @@ PAGES['order-call'] = function() {
   return `
   <div class="page-title">通话记录</div>
   <div class="page-desc">查看所有视频通话订单</div>
-  ${filterBar([{label:'订单编号'},{label:'拨打方昵称/ID/手机号'},{label:'接听方昵称/ID/手机号'},{type:'select',label:'状态',options:['通话中','已结束','未接听','已取消','被拒绝']},{type:'date-range',label:'创建时间'}])}
+  ${filterBar([{label:'订单编号'},{label:'拨打方昵称/ID/手机号'},{label:'接听方昵称/ID/手机号'},{type:'select',label:'状态',options:['已结束','未接听','已取消','已挂断']},{type:'date-range',label:'创建时间'}])}
   <div class="table-wrapper">
     <table>
       <thead><tr><th>订单编号</th><th>拨打方</th><th>接听方</th><th>通话时长</th><th>金币数量</th><th>创建时间</th><th>状态</th><th>操作</th></tr></thead>
@@ -2347,9 +2347,9 @@ PAGES['order-call'] = function() {
         <tr><td style="font-family:monospace;font-size:12px">CO20260806002</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${userTag('用户D','女','U004','136****8004')}</td><td>12分05秒</td><td>120</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:15:10</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806002','用户C','U003','137****8003','用户D','U004','136****8004','12分05秒','120','2026-08-06 13:15:10','已结束',5.0,4.2)">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CO20260806003</td><td>${userTag('用户E','男','U005','135****8005')}</td><td>${userTag('用户F','女','U006','134****8006')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 12:00:00</td><td>${badge('未接听','warning')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806003','用户E','U005','135****8005','用户F','U006','134****8006','0分00秒','0','2026-08-06 12:00:00','未接听')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CO20260806004</td><td>${userTag('用户H','男','U007','133****8007')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td>8分30秒</td><td>85</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:45:33</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806004','用户H','U007','133****8007','用户B','U002','139****8002','8分30秒','85','2026-08-06 11:45:33','已结束',4.0,4.7)">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806005</td><td>${userTag('用户I','男','U008','132****8008')}</td><td>${userTag('用户J','女','U009','131****8009')}</td><td>3分15秒</td><td>32</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 10:20:18</td><td>${badge('通话中','info')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806005','用户I','U008','132****8008','用户J','U009','131****8009','3分15秒','32','2026-08-06 10:20:18','通话中')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806005</td><td>${userTag('用户I','男','U008','132****8008')}</td><td>${userTag('用户J','女','U009','131****8009')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 10:20:18</td><td>${badge('已挂断','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806005','用户I','U008','132****8008','用户J','U009','131****8009','0分00秒','0','2026-08-06 10:20:18','已挂断')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CO20260806006</td><td>${userTag('用户K','男','U010','130****8010')}</td><td>${userTag('用户L','女','U011','188****8011')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 09:30:00</td><td>${badge('已取消','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806006','用户K','U010','130****8010','用户L','U011','188****8011','0分00秒','0','2026-08-06 09:30:00','已取消')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806007</td><td>${userTag('用户M','男','U012','187****8012')}</td><td>${userTag('用户N','女','U013','186****8013')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 08:15:42</td><td>${badge('被拒绝','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806007','用户M','U012','187****8012','用户N','U013','186****8013','0分00秒','0','2026-08-06 08:15:42','被拒绝')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806007</td><td>${userTag('用户M','男','U012','187****8012')}</td><td>${userTag('用户N','女','U013','186****8013')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 08:15:42</td><td>${badge('已挂断','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806007','用户M','U012','187****8012','用户N','U013','186****8013','0分00秒','0','2026-08-06 08:15:42','已挂断')">详情</button></td></tr>
       </tbody>
     </table>
     ${pagination()}
@@ -2364,10 +2364,13 @@ function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, 
     document.body.appendChild(overlay);
   }
   var statusBadge = status === '已结束' ? '<span style="color:var(--ink-2)">已结束</span>'
-    : status === '通话中' ? '<span style="color:var(--primary)">通话中</span>'
+    : status === '已挂断' ? '<span style="color:var(--red)">已挂断</span>'
     : status === '未接听' ? '<span style="color:var(--orange)">未接听</span>'
-    : status === '已取消' ? '<span style="color:var(--ink-2)">已取消</span>'
-    : '<span style="color:var(--red)">被拒绝</span>';
+    : '<span style="color:var(--ink-2)">已取消</span>';
+  var statusNote = status === '已结束' ? '两人已视频通话互动过（接听方已接听）'
+    : status === '已挂断' ? '对方不接来电，直接选择挂断来电'
+    : status === '未接听' ? '拨打对方超时无人接听'
+    : '拨打方本人还没等对方接通就取消来电';
   var ratingRow = (label, rating) => rating !== undefined
     ? '<tr><td style="color:var(--ink-3);width:120px">' + label + '</td><td><span style="color:#f59e0b">★</span> ' + rating.toFixed(1) + ' 分</td></tr>'
     : '<tr><td style="color:var(--ink-3);width:120px">' + label + '</td><td style="color:var(--ink-3)">—</td></tr>';
@@ -2382,7 +2385,7 @@ function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, 
     + '<tr><td style="color:var(--ink-3)">金币消耗</td><td>' + coins + ' 金币</td></tr>'
     + '<tr><td style="color:var(--ink-3)">创建时间</td><td style="font-family:monospace">' + time + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">状态</td><td>' + statusBadge + '</td></tr>'
-    + ratingRow('拨打方评分', callerRating)
+    + '<tr><td style="color:var(--ink-3)">状态说明</td><td style="color:var(--ink-3);font-size:12px">' + statusNote + '</td></tr>'
     + ratingRow('接听方评分', calleeRating)
     + '</table>'
     + '</div>'
@@ -2396,20 +2399,29 @@ function closeCallDetail() {
 
 // --- Order Chat ---
 PAGES['order-chat'] = function() {
+  var mf = window._mutualFree !== false;
+  var statusOpts = mf ? ['正常计费','免费 · 互关','免费 · 打招呼'] : ['正常计费','互关计费','免费 · 打招呼'];
+  // 互关行的「金币消耗 + 计费状态」两列：随互关免费开关联动
+  function mutualCells(price) {
+    if(mf) {
+      return '<td style="color:var(--green);font-weight:600">0</td><td><span style="background:rgba(52,199,89,.14);color:var(--green);font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">免费 · 互关</span></td>';
+    }
+    return '<td>' + price + '</td><td><span style="background:rgba(250,173,20,.15);color:#d48806;font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">互关计费</span></td>';
+  }
   return `
   <div class="page-title">聊天记录</div>
-  <div class="page-desc">查看所有文字聊天订单（打招呼免费；互关用户间聊天免费，不扣费；男用户向普通对象发消息按聊天价格计费）</div>
-  ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'date-range',label:'发送时间'}])}
+  <div class="page-desc">查看所有文字聊天订单（打招呼免费；${mf ? '互关用户间聊天免费，不扣费' : '互关用户间聊天按正常价格计费'}；男用户向普通对象发消息按聊天价格计费，发送前强制校验余额）</div>
+  ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'select',label:'计费状态',options:statusOpts},{type:'date-range',label:'发送时间'}])}
   <div class="table-wrapper">
     <table>
       <thead><tr><th>订单编号</th><th>发送方(男)</th><th>接收方</th><th>消息内容</th><th>金币消耗</th><th>计费状态</th><th>发送时间</th><th>操作</th></tr></thead>
       <tbody>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806001</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td style="color:var(--ink-2)">好的呀，周末有空吗？</td><td>5</td><td><span style="color:var(--ink-2)">正常计费</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:35:10</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806001','用户A','U001','138****8001','用户B','U002','139****8002','好的呀，周末有空吗？',5,'2026-08-06 15:35:10','normal')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806002</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td style="color:var(--ink-2)">是的，我在城南这边</td><td>5</td><td><span style="color:var(--ink-2)">正常计费</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:32:48</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806002','用户A','U001','138****8001','用户B','U002','139****8002','是的，我在城南这边',5,'2026-08-06 15:32:48','normal')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CH20260806003</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${userTag('用户D','女','U004','136****8004')}</td><td style="color:var(--ink-2)">可以呀，你也是这个城市的吗？</td><td style="color:var(--green);font-weight:600">0</td><td><span style="background:rgba(52,199,89,.14);color:var(--green);font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">免费 · 互关</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:28:42</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806003','用户C','U003','137****8003','用户D','U004','136****8004','可以呀，你也是这个城市的吗？',0,'2026-08-06 14:28:42','mutual')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CH20260806003</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${userTag('用户D','女','U004','136****8004')}</td><td style="color:var(--ink-2)">可以呀，你也是这个城市的吗？</td>${mutualCells(5)}<td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:28:42</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806003','用户C','U003','137****8003','用户D','U004','136****8004','可以呀，你也是这个城市的吗？',${mf ? 0 : 5},'2026-08-06 14:28:42','mutual')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806004</td><td>${userTag('用户E','男','U005','135****8005')}</td><td>${userTag('用户F','女','U006','134****8006')}</td><td style="color:var(--ink-2)">你好，可以认识一下吗？</td><td style="color:var(--green);font-weight:600">0</td><td><span style="background:rgba(52,199,89,.14);color:var(--green);font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">免费 · 打招呼</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:48:05</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806004','用户E','U005','135****8005','用户F','U006','134****8006','你好，可以认识一下吗？',0,'2026-08-06 13:48:05','greet')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806005</td><td>${userTag('用户G','男','U007','133****8007')}</td><td>${userTag('用户H','女','U008','132****8008')}</td><td style="color:var(--ink-2)">那挺近的，有空可以出来玩</td><td>5</td><td><span style="color:var(--ink-2)">正常计费</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:05:15</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806005','用户G','U007','133****8007','用户H','U008','132****8008','那挺近的，有空可以出来玩',5,'2026-08-06 13:05:15','normal')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CH20260806006</td><td>${userTag('用户I','男','U009','131****8009')}</td><td>${userTag('用户J','女','U010','130****8010')}</td><td style="color:var(--ink-2)">周末要不要一起吃饭？</td><td style="color:var(--green);font-weight:600">0</td><td><span style="background:rgba(52,199,89,.14);color:var(--green);font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">免费 · 互关</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:22:48</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806006','用户I','U009','131****8009','用户J','U010','130****8010','周末要不要一起吃饭？',0,'2026-08-06 11:22:48','mutual')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CH20260806006</td><td>${userTag('用户I','男','U009','131****8009')}</td><td>${userTag('用户J','女','U010','130****8010')}</td><td style="color:var(--ink-2)">周末要不要一起吃饭？</td>${mutualCells(5)}<td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:22:48</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806006','用户I','U009','131****8009','用户J','U010','130****8010','周末要不要一起吃饭？',${mf ? 0 : 5},'2026-08-06 11:22:48','mutual')">详情</button></td></tr>
         <tr><td style="font-family:monospace;font-size:12px">CH20260806007</td><td>${userTag('用户K','男','U011','188****8011')}</td><td>${userTag('用户L','女','U012','187****8012')}</td><td style="color:var(--ink-2)">看到你的动态了，很有意思</td><td>5</td><td><span style="color:var(--ink-2)">正常计费</span></td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 10:18:30</td><td><button class="btn-action btn-action-view" onclick="showChatDetail('CH20260806007','用户K','U011','188****8011','用户L','U012','187****8012','看到你的动态了，很有意思',5,'2026-08-06 10:18:30','normal')">详情</button></td></tr>
       </tbody>
     </table>
@@ -2425,11 +2437,16 @@ function showChatDetail(sessionId, senderName, senderId, senderPhone, receiverNa
     document.body.appendChild(overlay);
   }
   var billDesc = billType === 'greet' ? '免费 · 打招呼（自动打招呼/首页打招呼不扣费）'
-    : billType === 'mutual' ? '免费 · 互关（双方互相关注，聊天免费，不受余额校验限制）'
-    : '发送方付费（男号发送，发送前校验余额）';
-  var coinTxt = coins === 0
-    ? '<span style="color:var(--green);font-weight:600">0 金币（免费）</span>'
-    : coins + ' 金币';
+    : billType === 'mutual' ? (window._mutualFree ? '免费 · 互关（双方互相关注，聊天免费，不受余额校验限制）' : '互关计费（互关免费已关闭，互相关注用户间按正常价格计费）')
+    : '发送方付费（男号发送，发送前强制校验余额）';
+var coinTxt;
+if(billType === 'mutual' && !window._mutualFree) {
+  coinTxt = coins + ' 金币（互关免费已关闭，按正常价格计费）';
+} else if(coins === 0) {
+  coinTxt = '<span style="color:var(--green);font-weight:600">0 金币（免费）</span>';
+} else {
+  coinTxt = coins + ' 金币';
+}
   overlay.innerHTML = '<div class="approve-modal" style="width:520px">'
     + '<div class="approve-modal-header"><span>聊天详情</span><button class="reject-modal-close" onclick="closeChatDetail()">&times;</button></div>'
     + '<div class="approve-modal-body">'
@@ -2840,91 +2857,57 @@ PAGES['market-signin'] = function() {
   <div class="card">
     <div class="card-title">签到设置</div>
     <div class="config-section">
-      <div class="config-row"><span class="config-label">每日签到金币奖励</span>
-      <div style="display:flex;gap:16px;align-items:center">
-        <div>
-          <label style="display:flex;align-items:center;gap:6px">
-            <span style="font-weight:500">男：</span>
-            <input class="form-input" style="width:80px" value="10"> <span style="font-size:12px;color:var(--ink-3)">金币/天</span>
-          </label>
-        </div>
-        <div>
-          <label style="display:flex;align-items:center;gap:6px">
-            <span style="font-weight:500">女：</span>
-            <input class="form-input" style="width:80px" value="1"> <span style="font-size:12px;color:var(--ink-3)">金币/天</span>
-          </label>
-        </div>
-        <div>
-          <label style="display:flex;align-items:center;gap:6px">
-            <span style="font-weight:500">TS：</span>
-            <input class="form-input" style="width:80px" value="5"> <span style="font-size:12px;color:var(--ink-3)">金币/天</span>
-          </label>
+      <div class="config-row" style="align-items:flex-start"><span class="config-label">每日签到金币奖励</span>
+        <div style="flex:1;max-width:640px">
+          <div style="font-size:13px">按用户成长等级逐级配置每日固定奖励，金币数量可后台自定义：<span style="font-size:12px;color:var(--ink-3)">（默认 Lv1=1 金币/天，Lv2=2 金币/天…可随时修改）</span></div>
+          <div style="margin-top:6px;font-size:12px;color:var(--ink-3)">例：男号 Lv5 每日签到固定获得 5 金币；在下方「等级金币奖励配置」中修改对应等级的金币数量即可。</div>
+          <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+            <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv1 → 1 金币</span>
+            <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv2 → 2 金币</span>
+            <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv3 → 3 金币</span>
+            <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv4 → 4 金币</span>
+            <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv5 → 5 金币</span>
+            <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv6 → 6 金币</span>
+            <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv7 → 7 金币</span>
+            <span style="background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px">Lv8 → 8 金币</span>
+            <span style="font-size:12px;color:var(--ink-3);align-self:center">…以此类推</span>
+          </div>
         </div>
       </div>
+      <div class="config-row"><span class="config-label">女性/TS 签到</span><span style="font-size:13px;color:var(--ink-3)">无签到奖励，前台隐藏签到入口（女号/TS 不显示签到功能）</span></div>
     </div>
-      
-      
-      <div class="card-title" style="margin-top:16px;font-size:13px">梯度奖励规则</div>
+    <div class="card-title" style="margin-top:16px;font-size:13px">等级金币奖励配置 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（男号适用，女号/TS 无签到入口）</span></div>
       <div class="table-wrapper" style="box-shadow:none">
         <table>
-          <thead><tr><th>累计签到天数</th><th>额外奖励金币</th><th>性别适用</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr><td>3天</td><td>20</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(3, 20, ['男'])">编辑</button></td></tr>
-            <tr><td>7天</td><td>50</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-              <span class="gender-tag">女</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(7, 50, ['男', '女'])">编辑</button></td></tr>
-            <tr><td>15天</td><td>100</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">女</span>
-              <span class="gender-tag">TS</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(15, 100, ['女', 'TS'])">编辑</button></td></tr>
-            <tr><td>30天</td><td>300</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-              <span class="gender-tag">女</span>
-              <span class="gender-tag">TS</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(30, 300, ['男', '女', 'TS'])">编辑</button></td></tr>
+          <thead><tr><th>成长等级</th><th style="width:220px">每日奖励金币</th><th style="width:100px">性别适用</th><th style="width:110px">操作</th></tr></thead>
+          <tbody id="signin-level-tbody">
+            <tr><td>Lv1</td><td><input class="form-input" style="width:80px" value="1"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv2</td><td><input class="form-input" style="width:80px" value="2"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv3</td><td><input class="form-input" style="width:80px" value="3"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv4</td><td><input class="form-input" style="width:80px" value="4"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv5</td><td><input class="form-input" style="width:80px" value="5"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv6</td><td><input class="form-input" style="width:80px" value="6"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv7</td><td><input class="form-input" style="width:80px" value="7"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
+            <tr><td>Lv8</td><td><input class="form-input" style="width:80px" value="8"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td><td><span class="gender-tag">男</span></td><td><button class="btn-action btn-action-ban" onclick="this.closest('tr').remove()">删除</button></td></tr>
           </tbody>
         </table>
       </div>
-      <div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="showSigninGradientModal()">+ 添加梯度</button> <button class="btn btn-primary" style="margin-left:8px">保存设置</button></div>
+      <div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="addSigninLevel()">+ 添加等级</button> <button class="btn btn-primary" style="margin-left:8px">保存设置</button></div>
     </div>
   </div>`;
 };
 
-// --- Sign-in Gradient Modal ---
-function showSigninGradientModal(days, coins, genders) {
-  var overlay = document.getElementById('signin-gradient-overlay');
-  if(!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'signin-gradient-overlay';
-    overlay.className = 'approve-overlay';
-    document.body.appendChild(overlay);
-  }
-  var isEdit = (days !== undefined && days !== null);
-  genders = genders || ['男', '女'];
-  var checked = function(g) { return genders.indexOf(g) >= 0; };
-  overlay.innerHTML = '<div class="approve-modal" style="width:500px">'
-    + '<div class="approve-modal-header"><span>' + (isEdit ? '编辑梯度奖励' : '添加梯度奖励') + '</span><button class="reject-modal-close" onclick="closeSigninGradientModal()">&times;</button></div>'
-    + '<div class="approve-modal-body">'
-    + '<div style="margin-bottom:16px"><strong>累计签到天数：</strong><input class="form-input" style="width:120px" value="' + (isEdit ? days : '') + '" placeholder="例如：3"></div>'
-    + '<div style="margin-bottom:16px"><strong>额外奖励金币：</strong><input class="form-input" style="width:120px" value="' + (isEdit ? coins : '') + '" placeholder="例如：20"></div>'
-    + '<div style="margin-bottom:16px"><strong>性别适用：</strong><div style="display:flex;gap:12px;align-items:center">'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('男') ? 'checked' : '') + '> 男</label>'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('女') ? 'checked' : '') + '> 女</label>'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('TS') ? 'checked' : '') + '> TS</label>'
-    + '</div></div>'
-    + '</div>'
-    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="closeSigninGradientModal()">确认</button><button class="btn btn-default" onclick="closeSigninGradientModal()">取消</button></div></div>';
-  overlay.classList.add('show');
-}
-
-function closeSigninGradientModal() {
-  var overlay = document.getElementById('signin-gradient-overlay');
-  if(overlay) {
-    overlay.classList.remove('show');
-  }
+// --- Sign-in Level Reward ---
+function addSigninLevel() {
+  var tbody = document.getElementById('signin-level-tbody');
+  if(!tbody) return;
+  var next = tbody.querySelectorAll('tr').length + 1;
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td>Lv' + next + '</td>'
+    + '<td><input class="form-input" style="width:80px" value="0"><span style="font-size:12px;color:var(--ink-3);margin-left:6px">金币/天</span></td>'
+    + '<td><span class="gender-tag">男</span></td>'
+    + '<td><button class="btn-action btn-action-ban" onclick="this.closest(\'tr\').remove()">删除</button></td>';
+  tbody.appendChild(tr);
 }
 
 // --- UV Dimension Switch ---
@@ -3552,18 +3535,31 @@ PAGES['rule-billing'] = function() {
           <span style="font-size:12px;color:var(--ink-3)">· 文字聊天价格：在认证审核 / 会员详情中设置（金币/条）</span>
         </div>
       </div>
-      <div class="config-row"><span class="config-label">发送前余额校验</span><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> <span style="font-size:12px;color:var(--ink-3)">男号发消息前校验金币余额，低于本条消息价格则拦截并提示充值</span></div>
+      <div class="config-row"><span class="config-label">发送前余额校验</span><span style="font-size:12px;color:var(--green);font-weight:600">强制开启（不可关闭）</span> <span style="font-size:12px;color:var(--ink-3)">消息收费时必定校验：男号发送收费消息前自动校验金币余额，低于本条消息价格则拦截发送并提示充值</span></div>
+      <div class="config-row"><span class="config-label">互关免费</span><label class="switch"><input type="checkbox" id="mutual-free-switch" checked onchange="toggleMutualFree(this)"><span class="switch-slider"></span></label> <span style="font-size:12px;color:var(--ink-3)">开启：互相关注用户间聊天免费；关闭：按正常价格计费</span></div>
     </div>
   </div>
   <div class="card">
     <div class="card-title">计费规则详情</div>
     <div class="config-section">
       <div class="config-row"><span class="config-label">打招呼</span><span style="font-size:13px;color:var(--green);font-weight:600">免费：自动打招呼与首页打招呼均不扣费</span></div>
-      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px">男号发送消息：按文字聊天计费规则扣金币，发送前校验余额，余额不足无法发送</span></div>
-      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px;color:var(--green);font-weight:600">女号/TS发送消息：免费，不扣费</span></div>
-      <div class="config-row"><span class="config-label">互关免费</span><span style="font-size:13px;color:var(--green);font-weight:600">双方互相关注后，相互发送文字消息免费，双方均不扣费，且不受余额校验限制</span></div>
+      <div class="config-row"><span class="config-label">文字聊天</span><span style="font-size:13px">男号发送消息：按文字聊天计费规则扣金币，发送前强制校验余额（不可关闭），低于本条消息价格则拦截并向男号提示充值</span></div>
+      <div class="config-row"><span class="config-label">女号/TS发送消息</span><span style="font-size:13px;color:var(--green);font-weight:600">免费，不扣费</span></div>
+      <div class="config-row"><span class="config-label">互关免费</span><span id="mutual-free-desc" style="font-size:13px;color:var(--green);font-weight:600">双方互相关注后，相互发送文字消息免费，双方均不扣费，且不受余额校验限制</span></div>
       <div class="config-row"><span class="config-label">视频通话</span><span style="font-size:13px">男号拨打女号：男号按视频通话计费规则扣金币，女号获得钻石收益</span></div>
       <div class="config-row"><span class="config-label">视频通话</span><span style="font-size:13px;color:var(--green);font-weight:600">女号/TS拨打男号：不扣女号金币，男号无收入</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">视频接通公告</div>
+    <div class="config-section">
+      <div class="config-row"><span class="config-label">接通时展示公告</span><label class="switch"><input type="checkbox" id="call-notice-switch" checked onchange="toggleCallNotice(this)"><span class="switch-slider"></span></label> <span style="font-size:12px;color:var(--ink-3)">开启：用户接通视频通话后，画面顶部展示公告提示</span></div>
+      <div class="config-row" style="align-items:flex-start"><span class="config-label">公告文字</span>
+        <div style="flex:1;max-width:560px">
+          <textarea class="form-textarea" id="call-notice-text" rows="3" style="width:100%" placeholder="请输入接通视频后展示的公告文字">为营造健康优质的交友环境，通话过程将开启录音与安全巡查，请文明用语、理性交流。</textarea>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:4px">接通视频后画面顶部展示该公告；关闭开关后则不展示。示例：为营造健康交友环境，通话过程开启安全巡查，请文明交流。</div>
+        </div>
+      </div>
     </div>
   </div>
   <button class="btn btn-primary">保存配置</button>`;
@@ -3578,6 +3574,29 @@ function switchCallBillingUnit(sel) {
     var el = document.getElementById(ids[i]);
     if(el) el.textContent = unit;
   }
+}
+
+// --- Mutual Free Switch ---
+window._mutualFree = true;
+function toggleMutualFree(chk) {
+  window._mutualFree = chk.checked;
+  var desc = document.getElementById('mutual-free-desc');
+  if(!desc) return;
+  if(chk.checked) {
+    desc.style.color = 'var(--green)';
+    desc.style.fontWeight = '600';
+    desc.textContent = '双方互相关注后，相互发送文字消息免费，双方均不扣费，且不受余额校验限制';
+  } else {
+    desc.style.color = 'var(--ink-2)';
+    desc.style.fontWeight = '400';
+    desc.textContent = '互关免费已关闭：互相关注用户间发送文字消息按正常价格计费，男号发送前同样强制校验余额';
+  }
+}
+
+// --- Call Notice Switch ---
+function toggleCallNotice(chk) {
+  var ta = document.getElementById('call-notice-text');
+  if(ta) ta.disabled = !chk.checked;
 }
 
 // --- Service FAQ ---
