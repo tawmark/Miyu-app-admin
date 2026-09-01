@@ -2829,119 +2829,147 @@ PAGES['ranking'] = function() {
 PAGES['market-signin'] = function() {
   return `
   <div class="page-title">每日签到</div>
-  <div class="page-desc">签到数据看板与奖励配置</div>
+  <div class="page-desc">签到数据看板与奖励配置（男号倍率制 · 女/TS号固定制）</div>
   <div class="stat-row" style="display:flex;gap:16px;align-items:stretch">
     <div class="stat-card blue" style="flex:1;display:flex;justify-content:space-between;align-items:flex-start">
       <div class="stat-header">
         <div class="num">8,456</div>
         <div class="label">今日签到人数</div>
+        <div style="font-size:12px;color:var(--ink-3);margin-top:2px">男 5,120 · 女/TS 3,336</div>
       </div>
       <div class="stat-filter">
         <input type="date" class="form-input" style="width:125px" value="2026-08-06">
       </div>
     </div>
-    <div class="stat-card green" style="flex:1;display:flex;justify-content:space-between;align-items:flex-start">
+    <div class="stat-card purple" style="flex:1;display:flex;justify-content:space-between;align-items:flex-start">
       <div class="stat-header">
-        <div class="num">6,234</div>
-        <div class="label">近7天签到</div>
+        <div class="num">5,120</div>
+        <div class="label">今日男号签到（倍率制）</div>
+        <div style="font-size:12px;color:var(--ink-2);margin-top:2px">今日倍率发放 <b style="color:#7c3aed">92,160</b> 金币</div>
       </div>
       <div class="stat-filter">
-        <select class="form-select" style="width:125px">
-          <option selected>近7天</option>
-          <option>近30天</option>
-          <option>自定义</option>
-        </select>
+        <select class="form-select" style="width:125px"><option selected>今日</option><option>近7天</option><option>近30天</option></select>
+      </div>
+    </div>
+    <div class="stat-card green" style="flex:1;display:flex;justify-content:space-between;align-items:flex-start">
+      <div class="stat-header">
+        <div class="num">3,336</div>
+        <div class="label">今日女号/TS 签到（固定制）</div>
+        <div style="font-size:12px;color:var(--ink-2);margin-top:2px">今日固定发放 <b style="color:var(--green)">3,336</b> 金币</div>
+      </div>
+      <div class="stat-filter">
+        <select class="form-select" style="width:125px"><option selected>今日</option><option>近7天</option><option>近30天</option></select>
       </div>
     </div>
   </div>
   <div class="card">
-    <div class="card-title">签到设置</div>
+    <div class="card-title">男号签到奖励（递增倍率制）</div>
     <div class="config-section">
-      <div class="config-row"><span class="config-label">每日签到金币奖励</span>
-      <div style="display:flex;gap:16px;align-items:center">
-        <div>
-          <label style="display:flex;align-items:center;gap:6px">
-            <span style="font-weight:500">男：</span>
-            <input class="form-input" style="width:80px" value="10"> <span style="font-size:12px;color:var(--ink-3)">金币/天</span>
-          </label>
-        </div>
-        <div>
-          <label style="display:flex;align-items:center;gap:6px">
-            <span style="font-weight:500">女：</span>
-            <input class="form-input" style="width:80px" value="1"> <span style="font-size:12px;color:var(--ink-3)">金币/天</span>
-          </label>
-        </div>
-        <div>
-          <label style="display:flex;align-items:center;gap:6px">
-            <span style="font-weight:500">TS：</span>
-            <input class="form-input" style="width:80px" value="5"> <span style="font-size:12px;color:var(--ink-3)">金币/天</span>
-          </label>
-        </div>
+      <div class="config-row"><span class="config-label">基准金币</span>
+        <input class="form-input" id="signin-base-coins" style="width:80px" value="5" oninput="recalcSignin()"> <span style="font-size:12px;color:var(--ink-3)">金币 × 当日倍率 = 当日签到奖励</span>
       </div>
-    </div>
-      
-      
-      <div class="card-title" style="margin-top:16px;font-size:13px">梯度奖励规则</div>
-      <div class="table-wrapper" style="box-shadow:none">
+      <div class="table-wrapper" style="box-shadow:none;margin-top:8px">
         <table>
-          <thead><tr><th>累计签到天数</th><th>额外奖励金币</th><th>性别适用</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr><td>3天</td><td>20</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(3, 20, ['男'])">编辑</button></td></tr>
-            <tr><td>7天</td><td>50</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-              <span class="gender-tag">女</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(7, 50, ['男', '女'])">编辑</button></td></tr>
-            <tr><td>15天</td><td>100</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">女</span>
-              <span class="gender-tag">TS</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(15, 100, ['女', 'TS'])">编辑</button></td></tr>
-            <tr><td>30天</td><td>300</td><td><div style="display:flex;gap:4px;flex-wrap:wrap">
-              <span class="gender-tag">男</span>
-              <span class="gender-tag">女</span>
-              <span class="gender-tag">TS</span>
-            </div></td><td><button class="btn-action btn-action-edit" onclick="showSigninGradientModal(30, 300, ['男', '女', 'TS'])">编辑</button></td></tr>
+          <thead><tr><th>签到天数</th><th>倍率</th><th>当日奖励</th><th>说明</th></tr></thead>
+          <tbody id="signin-rate-table">
+            <tr><td>第 1 天</td><td><input class="form-input signin-rate" style="width:70px" value="1" oninput="recalcSignin()"></td><td class="signin-coin">5 金币</td><td style="color:var(--ink-3);font-size:12px">起步奖励</td></tr>
+            <tr><td>第 2 天</td><td><input class="form-input signin-rate" style="width:70px" value="2" oninput="recalcSignin()"></td><td class="signin-coin">10 金币</td><td style="color:var(--ink-3);font-size:12px">—</td></tr>
+            <tr><td>第 3 天</td><td><input class="form-input signin-rate" style="width:70px" value="3" oninput="recalcSignin()"></td><td class="signin-coin">15 金币</td><td style="color:var(--ink-3);font-size:12px">—</td></tr>
+            <tr><td>第 4 天</td><td><input class="form-input signin-rate" style="width:70px" value="4" oninput="recalcSignin()"></td><td class="signin-coin">20 金币</td><td style="color:var(--ink-3);font-size:12px">—</td></tr>
+            <tr><td>第 5 天</td><td><input class="form-input signin-rate" style="width:70px" value="6" oninput="recalcSignin()"></td><td class="signin-coin">30 金币</td><td style="color:var(--ink-3);font-size:12px">倍率跳增</td></tr>
+            <tr><td>第 6 天</td><td><input class="form-input signin-rate" style="width:70px" value="8" oninput="recalcSignin()"></td><td class="signin-coin">40 金币</td><td style="color:var(--ink-3);font-size:12px">—</td></tr>
+            <tr><td>第 7 天</td><td><input class="form-input signin-rate" style="width:70px" value="12" oninput="recalcSignin()"></td><td class="signin-coin">60 金币</td><td style="color:var(--ink-3);font-size:12px">周末大奖</td></tr>
           </tbody>
         </table>
       </div>
-      <div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="showSigninGradientModal()">+ 添加梯度</button> <button class="btn btn-primary" style="margin-left:8px">保存设置</button></div>
+      <div style="margin-top:10px;font-size:13px">
+        <span>单周期（7 天）总奖励：<b id="signin-cycle-total" style="color:var(--primary)">180</b> 金币</span>
+        <span style="margin-left:16px;color:var(--ink-3);font-size:12px">漏签重置规则：漏签后次日从第 1 天重新开始 · 完成 7 天后开启新周期，倍率从 1× 重新计算</span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">女号 / TS 签到奖励（固定金币制）</div>
+    <div class="config-section">
+      <div class="config-row"><span class="config-label">每日固定奖励</span>
+        <input class="form-input" id="signin-female-coins" style="width:80px" value="1"> <span style="font-size:12px;color:var(--ink-3)">金币/天（女号、TS 号每天固定发放，不随天数变化；单周期共 7 金币）</span>
+      </div>
+      <div style="margin-top:8px;padding:10px 12px;background:rgba(52,199,89,.06);border-radius:8px;font-size:12px;color:var(--ink-2)">
+        <b style="color:var(--green)">固定制说明：</b>女号/TS 号签到奖励与连续天数无关，每天签到即得固定金币，规则简单直接；漏签重置规则与男号一致。
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary">保存设置</button>
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">签到记录查询</div>
+    ${filterBar([{label:'用户昵称/ID/手机号'},{type:'select',label:'性别',options:['全部','男','女','TS']},{type:'select',label:'奖励类型',options:['全部','倍率发放','固定发放']},{type:'date-range',label:'签到日期'}])}
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>用户</th><th>性别</th><th>连续签到</th><th>当日倍率</th><th>获得金币</th><th>本周期累计</th><th>签到时间</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td>${userTag('用户C','男','U003','137****8003')}</td><td><span class="gender-tag">男</span></td><td>第 5 天</td><td>6×</td><td style="color:var(--primary);font-weight:600">30</td><td>75</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 09:12:05</td><td><button class="btn-action btn-action-view" onclick="showSigninDetail('用户C','U003','137****8003','男','第 5 天','6×',30,75,'2026-08-06 09:12:05')">详情</button></td></tr>
+          <tr><td>${userTag('用户B','女','U002','139****8002')}</td><td><span class="gender-tag">女</span></td><td>第 2 天</td><td>固定</td><td style="color:var(--green);font-weight:600">1</td><td>2</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 09:03:41</td><td><button class="btn-action btn-action-view" onclick="showSigninDetail('用户B','U002','139****8002','女','第 2 天','固定',1,2,'2026-08-06 09:03:41')">详情</button></td></tr>
+          <tr><td>${userTag('用户E','男','U005','135****8005')}</td><td><span class="gender-tag">男</span></td><td>第 7 天</td><td>12×</td><td style="color:var(--primary);font-weight:600">60</td><td>180</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 08:30:55</td><td><button class="btn-action btn-action-view" onclick="showSigninDetail('用户E','U005','135****8005','男','第 7 天','12×',60,180,'2026-08-06 08:30:55')">详情</button></td></tr>
+          <tr><td>${userTag('用户G','TS','U007','133****8007')}</td><td><span class="gender-tag">TS</span></td><td>第 2 天</td><td>固定</td><td style="color:var(--green);font-weight:600">1</td><td>2</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 07:58:09</td><td><button class="btn-action btn-action-view" onclick="showSigninDetail('用户G','U007','133****8007','TS','第 2 天','固定',1,2,'2026-08-06 07:58:09')">详情</button></td></tr>
+          <tr><td>${userTag('用户I','男','U009','131****8009')}</td><td><span class="gender-tag">男</span></td><td>第 1 天</td><td>1×</td><td style="color:var(--primary);font-weight:600">5</td><td>5</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 07:40:26</td><td><button class="btn-action btn-action-view" onclick="showSigninDetail('用户I','U009','131****8009','男','第 1 天','1×',5,5,'2026-08-06 07:40:26')">详情</button></td></tr>
+        </tbody>
+      </table>
+      ${pagination()}
     </div>
   </div>`;
 };
 
-// --- Sign-in Gradient Modal ---
-function showSigninGradientModal(days, coins, genders) {
-  var overlay = document.getElementById('signin-gradient-overlay');
+// --- Signin Rate Recalc ---
+function recalcSignin() {
+  var baseInput = document.getElementById('signin-base-coins');
+  if(!baseInput) return;
+  var base = parseInt(baseInput.value) || 0;
+  var rows = document.querySelectorAll('#signin-rate-table tr');
+  var total = 0;
+  rows.forEach(function(row) {
+    var input = row.querySelector('input.signin-rate');
+    var coinCell = row.querySelector('td.signin-coin');
+    if(!input || !coinCell) return;
+    var rate = parseInt(input.value) || 0;
+    var coins = base * rate;
+    total += coins;
+    coinCell.textContent = coins + ' 金币';
+  });
+  var totalEl = document.getElementById('signin-cycle-total');
+  if(totalEl) totalEl.textContent = total;
+}
+
+// --- Sign-in Detail Modal ---
+function showSigninDetail(name, uid, phone, gender, days, rate, coins, cycleTotal, time) {
+  var overlay = document.getElementById('signin-detail-overlay');
   if(!overlay) {
     overlay = document.createElement('div');
-    overlay.id = 'signin-gradient-overlay';
+    overlay.id = 'signin-detail-overlay';
     overlay.className = 'approve-overlay';
     document.body.appendChild(overlay);
   }
-  var isEdit = (days !== undefined && days !== null);
-  genders = genders || ['男', '女'];
-  var checked = function(g) { return genders.indexOf(g) >= 0; };
-  overlay.innerHTML = '<div class="approve-modal" style="width:500px">'
-    + '<div class="approve-modal-header"><span>' + (isEdit ? '编辑梯度奖励' : '添加梯度奖励') + '</span><button class="reject-modal-close" onclick="closeSigninGradientModal()">&times;</button></div>'
+  var isFixed = rate === '固定';
+  var rateTxt = isFixed ? '固定奖励（不随天数变化）' : '倍率 ' + rate + '（' + gender + '号倍率制）';
+  overlay.innerHTML = '<div class="approve-modal" style="width:440px">'
+    + '<div class="approve-modal-header"><span>签到记录详情</span><button class="reject-modal-close" onclick="closeSigninDetail()">&times;</button></div>'
     + '<div class="approve-modal-body">'
-    + '<div style="margin-bottom:16px"><strong>累计签到天数：</strong><input class="form-input" style="width:120px" value="' + (isEdit ? days : '') + '" placeholder="例如：3"></div>'
-    + '<div style="margin-bottom:16px"><strong>额外奖励金币：</strong><input class="form-input" style="width:120px" value="' + (isEdit ? coins : '') + '" placeholder="例如：20"></div>'
-    + '<div style="margin-bottom:16px"><strong>性别适用：</strong><div style="display:flex;gap:12px;align-items:center">'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('男') ? 'checked' : '') + '> 男</label>'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('女') ? 'checked' : '') + '> 女</label>'
-    + '<label style="display:flex;align-items:center;gap:6px"><input type="checkbox" ' + (checked('TS') ? 'checked' : '') + '> TS</label>'
-    + '</div></div>'
+    + '<table class="detail-table" style="width:100%;font-size:13px">'
+    + '<tr><td style="color:var(--ink-3);width:110px">用户</td><td>' + name + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + uid + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + phone + '</span></td></tr>'
+    + '<tr><td style="color:var(--ink-3)">性别</td><td>' + gender + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3)">连续签到</td><td>' + days + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3)">奖励方式</td><td>' + rateTxt + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3)">获得金币</td><td style="color:var(--primary);font-weight:600">' + coins + ' 金币</td></tr>'
+    + '<tr><td style="color:var(--ink-3)">本周期累计</td><td>' + cycleTotal + ' 金币</td></tr>'
+    + '<tr><td style="color:var(--ink-3)">签到时间</td><td style="font-family:monospace">' + time + '</td></tr>'
+    + '</table>'
     + '</div>'
-    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="closeSigninGradientModal()">确认</button><button class="btn btn-default" onclick="closeSigninGradientModal()">取消</button></div></div>';
+    + '<div class="approve-modal-footer"><button class="btn btn-default" onclick="closeSigninDetail()">关闭</button></div></div>';
   overlay.classList.add('show');
 }
 
-function closeSigninGradientModal() {
-  var overlay = document.getElementById('signin-gradient-overlay');
-  if(overlay) {
-    overlay.classList.remove('show');
-  }
+function closeSigninDetail() {
+  var overlay = document.getElementById('signin-detail-overlay');
+  if(overlay) overlay.classList.remove('show');
 }
 
 // --- UV Dimension Switch ---
