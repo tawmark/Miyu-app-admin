@@ -1081,7 +1081,7 @@ PAGES['member-list'] = function() {
           <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r[11]}</td>
           <td style="white-space:nowrap">
             <button class="btn-action btn-action-view" onclick="navigate('member-detail','会员详情')">详情</button>
-            <button class="btn-action btn-action-rate" onclick="showRateModal('${r[0]}','${r[1]}','${r[3]}','${r[2]}')">兑换设置</button>
+            <button class="btn-action btn-action-rate" onclick="showRateModal('${r[0]}','${r[1]}','${r[3]}','${r[2]}')">分成设置</button>
             ${r[12]!=='-' ? `<button class="btn-action btn-action-edit" onclick="editChatPrice('${r[12].split('/')[0]}','${r[12].split('/')[1]}')">改价</button>` : ''}
             ${r[6]==='禁用' 
               ? '<button class="btn-action btn-action-unban">取消禁用</button>' 
@@ -1191,11 +1191,11 @@ PAGES['member-detail'] = function() {
         <div class="info-item"><span class="label">文字聊天</span><span class="value">2 金币/条</span></div>
       </div>
       <div style="margin-top:12px"><button class="btn btn-primary" onclick="editChatPrice('30','2')">修改聊天价格</button></div>
-      <div style="font-size:14px;font-weight:600;color:var(--ink);margin:20px 0 4px;padding-left:8px;border-left:3px solid var(--primary)">兑换比例 <span style="font-size:12px;font-weight:400;color:var(--ink-2);margin-left:6px">收益结算时按此比例将金币折算为钻石</span></div>
+      <div style="font-size:14px;font-weight:600;color:var(--ink);margin:20px 0 4px;padding-left:8px;border-left:3px solid var(--primary)">分成比例 <span style="font-size:12px;font-weight:400;color:var(--ink-2);margin-left:6px">收益结算时按此比例将金币折算为钻石</span></div>
       <div class="info-grid">
         <div class="info-item"><span class="label">当前比例</span><span class="value" id="detail-rate-text">${getUserRateText('10001')}</span></div>
       </div>
-      <div style="margin-top:12px"><button class="btn btn-primary" id="detail-rate-btn" onclick="showRateModal('10001','用户A','男','13888888888')">${hasRateSetting('10001') ? '修改兑换比例' : '设置兑换比例'}</button></div>
+      <div style="margin-top:12px"><button class="btn btn-primary" id="detail-rate-btn" onclick="showRateModal('10001','用户A','男','13888888888')">${hasRateSetting('10001') ? '修改分成比例' : '设置分成比例'}</button></div>
       <div style="font-size:14px;font-weight:600;color:var(--ink);margin:20px 0 4px;padding-left:8px;border-left:3px solid var(--primary)">照片墙 <span style="font-size:12px;font-weight:400;color:var(--ink-2);margin-left:6px">3/9 张</span></div>
       <div class="photo-wall">
         <div class="photo-wall-item"><img src="https://picsum.photos/seed/social-photo-1/200/200" alt="照片1"></div>
@@ -3566,19 +3566,19 @@ PAGES['rule-billing'] = function() {
     </div>
   </div>
   <div class="card">
-    <div class="card-title">金币·钻石兑换配置 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（通话 / 聊天 / 礼物等收益结算时，男号扣金币，女号/TS按兑换比例折算获得钻石收益）</span></div>
+    <div class="card-title">金币·钻石分成比例 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（通话 / 聊天 / 礼物等收益结算时，男号扣金币，女号/TS按分成比例折算获得钻石收益）</span></div>
     <div class="config-section">
-      <div class="config-row"><span class="config-label">默认兑换比例</span><input id="default-rate-input" class="form-input" style="max-width:110px" value="10"> <span style="font-size:12px;color:var(--ink-3)">金币 = 1 钻石（未单独设置的用户按此默认比例结算）</span></div>
+      <div class="config-row"><span class="config-label">默认分成比例</span><input id="default-rate-input" class="form-input" style="max-width:110px" value="10"> <span style="font-size:12px;color:var(--ink-3)">金币 = 1 钻石（未单独设置的用户按此默认比例结算）</span></div>
       <div class="config-row" style="align-items:flex-start"><span class="config-label">个人分成比例</span>
         <div style="flex:1">
-          <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;line-height:1.7">针对指定用户单独设置兑换比例，<b>单独设置后默认兑换比例对该用户失效</b>，按单独比例结算收益；删除单独设置后恢复默认比例。</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;line-height:1.7">针对指定用户单独设置分成比例，<b>单独设置后默认分成比例对该用户失效</b>，按单独比例结算收益；不需要时，把数值填回默认比例或在设置弹窗中「重置为默认」即可恢复。</div>
           <div class="table-wrapper" style="box-shadow:none;margin-bottom:12px">
             <table>
-              <thead><tr><th>用户</th><th>性别</th><th>单独兑换比例</th><th>生效规则</th><th>设置时间</th><th>操作</th></tr></thead>
+              <thead><tr><th>用户</th><th>性别</th><th>单独分成比例</th><th>生效规则</th><th>设置时间</th></tr></thead>
               <tbody id="rate-table-tbody">${buildRateTableHtml()}</tbody>
             </table>
           </div>
-          <div style="font-size:12px;color:var(--ink-2);line-height:1.7">需要为某个用户单独设置兑换比例？请前往 <a href="javascript:navigate('member-list','会员列表')" style="color:var(--primary)">会员列表</a> 或 <a href="javascript:navigate('member-detail','会员详情')" style="color:var(--primary)">会员详情</a>，点击该用户操作中的「兑换设置」即可设置。</div>
+          <div style="font-size:12px;color:var(--ink-2);line-height:1.7">此列表仅作汇总展示。需要新增或调整用户的分成比例，请前往 <a href="javascript:navigate('member-list','会员列表')" style="color:var(--primary)">会员列表</a> 或 <a href="javascript:navigate('member-detail','会员详情')" style="color:var(--primary)">会员详情</a>，点击该用户操作中的「分成设置」即可设置或重置。</div>
         </div>
       </div>
     </div>
@@ -3632,7 +3632,7 @@ function toggleCallNotice(chk) {
   if(ta) ta.disabled = !chk.checked;
 }
 
-// --- Coin-Diamond Rate Modal (金币·钻石兑换比例) ---
+// --- Coin-Diamond Split Modal (金币·钻石分成比例) ---
 var RATE_CANDIDATES = [
   ['U100001','用户A','女','138****1111'],
   ['U100002','用户B','女','139****2222'],
@@ -3646,7 +3646,7 @@ var RATE_CANDIDATES = [
   ['U200687','用户R','女','134****5640'],
   ['U200966','用户O','女','137****2310']
 ];
-// 单独兑换比例持久状态：key 为用户ID（含 U 前缀），比较时忽略 U 前缀
+// 单独分成比例持久状态：key 为用户ID（含 U 前缀），比较时忽略 U 前缀
 window._rateSettings = {
   'U200321': { name:'用户M', gender:'女', phone:'138****4521', rate:8, time:'2026-08-20 10:24' },
   'U200108': { name:'用户N', gender:'女', phone:'139****7745', rate:15, time:'2026-08-18 16:42' }
@@ -3677,7 +3677,6 @@ function buildRateTableHtml() {
       + '<td><b>' + s.rate + ' 金币 = 1 钻石</b></td>'
       + '<td><span style="background:#fff3e0;color:#e66a00;font-size:12px;padding:3px 8px;border-radius:4px;font-weight:600">单独设置 · 默认失效</span></td>'
       + '<td>' + s.time + '</td>'
-      + '<td><button class="btn-action btn-action-edit" onclick="showRateModal(\'' + key + '\')">编辑</button> <button class="btn-action btn-action-ban" onclick="removeRateRow(this)">删除</button></td>'
       + '</tr>';
   }
   return out;
@@ -3692,7 +3691,7 @@ function refreshDetailRate(uid) {
   if(!el && !btn) return;
   var s = getRateSetting(uid);
   if(el) el.innerHTML = getUserRateText(uid);
-  if(btn) btn.textContent = s ? '修改兑换比例' : '设置兑换比例';
+  if(btn) btn.textContent = s ? '修改分成比例' : '设置分成比例';
 }
 function showRateModal(uid, name, gender, phone) {
   var overlay = document.getElementById('rate-modal-overlay');
@@ -3724,18 +3723,24 @@ function showRateModal(uid, name, gender, phone) {
     phone = phone || '';
   }
   uid = uid || '';
+  var defRate = 10;
+  var defInput = document.getElementById('default-rate-input');
+  if(defInput) {
+    var dv = parseInt(defInput.value, 10);
+    if(dv > 0) defRate = dv;
+  }
   overlay.innerHTML = '<div class="approve-modal" style="width:480px">'
-    + '<div class="approve-modal-header"><span>' + (existing ? '编辑兑换比例' : '设置兑换比例') + '</span><button class="reject-modal-close" onclick="closeRateModal()">&times;</button></div>'
+    + '<div class="approve-modal-header"><span>' + (existing ? '修改单独分成比例' : '设置单独分成比例') + '</span><button class="reject-modal-close" onclick="closeRateModal()">&times;</button></div>'
     + '<div class="approve-modal-body">'
     + '<div style="margin-bottom:16px"><strong>设置用户</strong><div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <span style="font-weight:600">' + name + '</span> <span style="color:var(--ink-2)">' + uid + '</span>' + (gender ? ' <span class="gender-tag">' + gender + '</span>' : '') + (phone ? ' <span style="font-family:monospace;font-size:12px;color:var(--ink-3)">' + phone + '</span>' : '') + '</div></div>'
-    + '<div style="margin-bottom:16px"><strong>单独兑换比例</strong><div style="display:flex;align-items:center;gap:6px;margin-top:4px"><input id="rate-value-input" class="form-input" type="number" min="1" placeholder="如 8" style="width:110px" value="' + oldRate + '"><span style="font-size:13px;color:var(--ink-2)">金币 = 1 钻石</span></div></div>'
-    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.7">' + (existing ? '当前已设置单独比例 <b style="color:var(--orange)">' + oldRate + ' 金币 = 1 钻石</b>，修改后立即按新比例折算该用户收益。' : '单独设置后，该用户收益按此比例折算，<b style="color:var(--orange)">默认兑换比例对其失效</b>；删除单独设置后恢复默认比例。') + ' 示例：男号消费 80 金币，按 8 金币=1 钻石折算，该用户获得 10 钻石。</div>'
+    + '<div style="margin-bottom:16px"><strong>单独分成比例</strong><div style="display:flex;align-items:center;gap:6px;margin-top:4px"><input id="rate-value-input" class="form-input" type="number" min="1" placeholder="如 8" style="width:110px" value="' + oldRate + '"><span style="font-size:13px;color:var(--ink-2)">金币 = 1 钻石</span></div><div style="font-size:12px;color:var(--ink-3);margin-top:4px">留空或填默认比例（当前默认 <b>' + defRate + '</b> 金币 = 1 钻石）即按默认结算</div></div>'
+    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.7">' + (existing ? '当前已设置单独比例 <b style="color:var(--orange)">' + oldRate + ' 金币 = 1 钻石</b>，修改后立即按新比例折算该用户收益；填回默认数值或点击「重置为默认」即可恢复。' : '单独设置后，该用户收益按此比例折算，<b style="color:var(--orange)">默认分成比例对其失效</b>；不需要时填回默认数值或点击「重置为默认」即可恢复。') + ' 示例：男号消费 80 金币，按 8 金币=1 钻石折算，该用户获得 10 钻石。</div>'
     + '<input type="hidden" id="rate-origin-uid" value="' + uid + '">'
     + '<input type="hidden" id="rate-user-name" value="' + name + '">'
     + '<input type="hidden" id="rate-user-gender" value="' + gender + '">'
     + '<input type="hidden" id="rate-user-phone" value="' + phone + '">'
     + '</div>'
-    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="saveRateSetting()">确认</button><button class="btn btn-default" onclick="closeRateModal()">取消</button></div></div>';
+    + '<div class="approve-modal-footer">' + (existing ? '<button class="btn btn-danger" onclick="resetRateSetting()">重置为默认</button>' : '') + '<button class="btn btn-primary" onclick="saveRateSetting()">确认</button><button class="btn btn-default" onclick="closeRateModal()">取消</button></div></div>';
   overlay.classList.add('show');
 }
 function closeRateModal() {
@@ -3750,14 +3755,29 @@ function saveRateSetting() {
   var phoneEl = document.getElementById('rate-user-phone');
   if(!val || !origin) return;
   var uid = origin.value;
-  var rate = parseInt(val.value, 10);
-  if(!rate || rate <= 0) {
-    showTagToast('请填写正确的兑换比例（正整数金币数）', 'error');
-    return;
-  }
   var name = (nameEl && nameEl.value) ? nameEl.value : uid;
   var gender = genderEl ? genderEl.value : '';
   var tel = phoneEl ? phoneEl.value : '';
+  var defRate = 10;
+  var defInput = document.getElementById('default-rate-input');
+  if(defInput) {
+    var dv = parseInt(defInput.value, 10);
+    if(dv > 0) defRate = dv;
+  }
+  var rate = parseInt(val.value, 10);
+  if(!rate || rate <= 0) {
+    showTagToast('请填写正确的分成比例（正整数金币数）', 'error');
+    return;
+  }
+  if(rate === defRate) {
+    var wasSet = !!getRateSetting(uid);
+    clearRateSetting(uid);
+    renderRateTable();
+    refreshDetailRate(uid);
+    closeRateModal();
+    showTagToast(wasSet ? '「' + name + '」已恢复默认分成比例：' + defRate + ' 金币 = 1 钻石' : '「' + name + '」数值与默认一致，无需单独设置', 'success');
+    return;
+  }
   var existed = !!getRateSetting(uid);
   var now = new Date();
   function pad(n){ return n < 10 ? '0' + n : n; }
@@ -3766,23 +3786,28 @@ function saveRateSetting() {
   renderRateTable();
   refreshDetailRate(uid);
   closeRateModal();
-  showTagToast((existed ? '已更新' : '已添加') + '「' + name + '」单独兑换比例：' + rate + ' 金币 = 1 钻石（默认配置对其失效）', 'success');
+  showTagToast((existed ? '已更新' : '已添加') + '「' + name + '」单独分成比例：' + rate + ' 金币 = 1 钻石（默认配置对其失效）', 'success');
 }
-function removeRateRow(btn) {
-  var tr = btn.closest('tr');
-  if(!tr) return;
-  var uid = tr.getAttribute('data-uid') || '';
-  var setting = getRateSetting(uid);
-  var name = setting ? setting.name : (tr.textContent.trim().split(' ')[0] || '该用户');
+function clearRateSetting(uid) {
   var k = rateNorm(uid);
   var storeKey = null;
   for(var key in window._rateSettings) {
     if(rateNorm(key) === k) { storeKey = key; break; }
   }
   if(storeKey) delete window._rateSettings[storeKey];
+}
+function resetRateSetting() {
+  var origin = document.getElementById('rate-origin-uid');
+  if(!origin) return;
+  var uid = origin.value;
+  var setting = getRateSetting(uid);
+  if(!setting) { closeRateModal(); return; }
+  var name = setting.name || uid;
+  clearRateSetting(uid);
   renderRateTable();
   refreshDetailRate(uid);
-  showTagToast('已删除「' + name + '」的单独设置，已恢复默认兑换比例', 'success');
+  closeRateModal();
+  showTagToast('「' + name + '」（' + uid + '）已重置为默认分成比例', 'success');
 }
 
 // --- Service FAQ ---
