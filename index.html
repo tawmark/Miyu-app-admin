@@ -1191,7 +1191,7 @@ PAGES['member-detail'] = function() {
         <div class="info-item"><span class="label">文字聊天</span><span class="value">2 金币/条</span></div>
       </div>
       <div style="margin-top:12px"><button class="btn btn-primary" onclick="editChatPrice('30','2')">修改聊天价格</button></div>
-      <div style="font-size:14px;font-weight:600;color:var(--ink);margin:20px 0 4px;padding-left:8px;border-left:3px solid var(--primary)">分成比例 <span style="font-size:12px;font-weight:400;color:var(--ink-2);margin-left:6px">收益结算时按该比例将消费金额折算为钻石（按提现设置的钻石兑换比例，小数位向下取整）</span></div>
+      <div style="font-size:14px;font-weight:600;color:var(--ink);margin:20px 0 4px;padding-left:8px;border-left:3px solid var(--primary)">分成比例 <span style="font-size:12px;font-weight:400;color:var(--ink-2);margin-left:6px">收益结算时按该比例将消费金币折算为钻石（小数位向下取整）</span></div>
       <div class="info-grid">
         <div class="info-item"><span class="label">当前比例</span><span class="value" id="detail-rate-text">${getUserRateText('10001')}</span></div>
       </div>
@@ -3579,7 +3579,7 @@ PAGES['rule-billing'] = function() {
   <div class="card">
     <div class="card-title">金币·钻石分成比例 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（通话 / 聊天 / 礼物等收益结算时，男号扣金币，女号/TS按分成比例折算获得钻石收益）</span></div>
     <div class="config-section">
-      <div class="config-row"><span class="config-label">默认分成比例</span><input id="default-rate-input" class="form-input" style="max-width:110px" value="50"> <span style="font-size:12px;color:var(--ink-3)">%（收益 = 消费金额按提现设置的钻石兑换比例折算后 × 此比例，小数位向下取整；未单独设置的用户按此默认比例结算）</span></div>
+      <div class="config-row"><span class="config-label">默认分成比例</span><input id="default-rate-input" class="form-input" style="max-width:110px" value="50"> <span style="font-size:12px;color:var(--ink-3)">%（他人为你消费的金币 × 此比例 = 所得钻石，小数位向下取整；未单独设置的用户按此默认比例结算）</span></div>
       <div style="font-size:12px;color:var(--ink-2);line-height:1.7">需要对个别用户单独设置分成比例？请前往 <a href="javascript:navigate('member-list','会员列表')" style="color:var(--primary)">会员列表</a> 或 <a href="javascript:navigate('member-detail','会员详情')" style="color:var(--primary)">会员详情</a>，点击该用户操作中的「分成设置」即可设置或重置，单独设置后默认比例对该用户失效。</div>
     </div>
   </div>
@@ -3715,14 +3715,14 @@ function showRateModal(uid, name, gender, phone) {
     + '<div class="approve-modal-header"><span>' + (existing ? '修改单独分成比例' : '设置单独分成比例') + '</span><button class="reject-modal-close" onclick="closeRateModal()">&times;</button></div>'
     + '<div class="approve-modal-body">'
     + '<div style="margin-bottom:16px"><strong>设置用户</strong><div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <span style="font-weight:600">' + name + '</span> <span style="color:var(--ink-2)">' + uid + '</span>' + (gender ? ' <span class="gender-tag">' + gender + '</span>' : '') + (phone ? ' <span style="font-family:monospace;font-size:12px;color:var(--ink-3)">' + phone + '</span>' : '') + '</div></div>'
-    + '<div style="margin-bottom:16px"><strong>单独分成比例</strong><div style="display:flex;align-items:center;gap:6px;margin-top:4px"><input id="rate-value-input" class="form-input" type="number" min="1" max="100" placeholder="如 50" style="width:110px" value="' + oldRate + '"><span style="font-size:13px;color:var(--ink-2)">%</span></div><div style="font-size:12px;color:var(--ink-3);margin-top:4px">留空或填默认比例（当前默认 <b>' + defRate + '%</b>）即按默认结算</div></div>'
-    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.7">' + (existing ? '当前已设置单独比例 <b style="color:var(--orange)">' + oldRate + '%</b>，修改后立即按新比例结算该用户收益；填回默认数值或点击「重置为默认」即可恢复。' : '单独设置后，该用户收益按此比例结算，<b style="color:var(--orange)">默认分成比例对其失效</b>；不需要时填回默认数值或点击「重置为默认」即可恢复。') + ' 示例：男号消费 100 元（按提现设置的钻石兑换比例折算为对应钻石），分成比例 50%，该用户获得 500 钻石；折算出现小数时向下取整，如折算 50.61 钻石则到账 50 钻石。</div>'
+    + '<div style="margin-bottom:16px"><strong>单独分成比例</strong><div style="display:flex;align-items:center;gap:6px;margin-top:4px"><input id="rate-value-input" class="form-input" type="number" min="1" max="100" placeholder="如 50" style="width:110px" value="' + oldRate + '"><span style="font-size:13px;color:var(--ink-2)">%</span></div><div style="font-size:12px;color:var(--ink-3);margin-top:4px">留空或填默认比例（当前默认 <b>' + defRate + '%</b>）即按默认分成结算，不会单独设置</div></div>'
+    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.7">' + (existing ? '当前已设置单独比例 <b style="color:var(--orange)">' + oldRate + '%</b>，修改后立即按新比例结算该用户收益；留空或填回默认数值即可恢复默认分成。' : '单独设置后，该用户收益按此比例结算，<b style="color:var(--orange)">默认分成比例对其失效</b>；留空或填回默认数值即恢复默认分成。') + ' 示例：男号消费 100 金币，分成比例 50%，该用户获得 50 钻石；折算出现小数时向下取整，如折算 50.61 钻石则到账 50 钻石。</div>'
     + '<input type="hidden" id="rate-origin-uid" value="' + uid + '">'
     + '<input type="hidden" id="rate-user-name" value="' + name + '">'
     + '<input type="hidden" id="rate-user-gender" value="' + gender + '">'
     + '<input type="hidden" id="rate-user-phone" value="' + phone + '">'
     + '</div>'
-    + '<div class="approve-modal-footer">' + (existing ? '<button class="btn btn-danger" onclick="resetRateSetting()">重置为默认</button>' : '') + '<button class="btn btn-primary" onclick="saveRateSetting()">确认</button><button class="btn btn-default" onclick="closeRateModal()">取消</button></div></div>';
+    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="saveRateSetting()">确认</button><button class="btn btn-default" onclick="closeRateModal()">取消</button></div></div>';
   overlay.classList.add('show');
 }
 function closeRateModal() {
@@ -3747,16 +3747,13 @@ function saveRateSetting() {
     if(dv > 0) defRate = dv;
   }
   var rate = parseInt(val.value, 10);
-  if(!rate || rate <= 0 || rate > 100) {
-    showTagToast('请填写正确的分成比例（1-100 的百分比）', 'error');
-    return;
-  }
-  if(rate === defRate) {
+  // 留空或填默认值 => 视为默认分成，撤销单独设置
+  if(!val.value.trim() || rate <= 0 || rate > 100 || rate === defRate) {
     var wasSet = !!getRateSetting(uid);
     clearRateSetting(uid);
     refreshDetailRate(uid);
     closeRateModal();
-    showTagToast(wasSet ? '「' + name + '」已恢复默认分成比例：' + defRate + '%' : '「' + name + '」数值与默认一致，无需单独设置', 'success');
+    showTagToast(wasSet ? '「' + name + '」已恢复默认分成比例：' + defRate + '%' : '留空或填默认值，按默认分成比例结算：' + defRate + '%', 'success');
     return;
   }
   var existed = !!getRateSetting(uid);
@@ -3775,18 +3772,6 @@ function clearRateSetting(uid) {
     if(rateNorm(key) === k) { storeKey = key; break; }
   }
   if(storeKey) delete window._rateSettings[storeKey];
-}
-function resetRateSetting() {
-  var origin = document.getElementById('rate-origin-uid');
-  if(!origin) return;
-  var uid = origin.value;
-  var setting = getRateSetting(uid);
-  if(!setting) { closeRateModal(); return; }
-  var name = setting.name || uid;
-  clearRateSetting(uid);
-  refreshDetailRate(uid);
-  closeRateModal();
-  showTagToast('「' + name + '」（' + uid + '）已重置为默认分成比例', 'success');
 }
 
 // --- Service FAQ ---
