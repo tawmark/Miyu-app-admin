@@ -86,9 +86,10 @@ function main() {
   const blockCount = syntaxCheck(MAIN);
   ok('主文件脚本语法通过（共 ' + blockCount + ' 个 script 块）');
 
-  // 2. 同步副本
-  step('同步副本 admin-prototype.html');
+  // 2. 同步副本（admin-prototype.html + GitHub Pages 入口 index.html）
+  step('同步副本 admin-prototype.html / index.html');
   fs.copyFileSync(MAIN, COPY);
+  fs.copyFileSync(MAIN, path.join(ROOT, 'index.html'));
   ok('已同步副本');
 
   // 3. MD5 校验
