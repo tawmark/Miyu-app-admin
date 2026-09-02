@@ -1418,7 +1418,7 @@ function showLevelModal(name, icon, sort, condition, remark, status) {
       + '</label>'
       + '</div></div>'
       + '<div class="config-row"><span class="config-label">排序 <span style="color:var(--red)">*</span></span><input class="form-input" id="level-sort" type="number" placeholder="数字越小越靠前" style="max-width:240px"></div>'
-      + '<div class="config-row"><span class="config-label">升级规则</span><div style="flex:1" id="level-rule-area"><div style="font-size:13px;color:var(--ink-2);margin-bottom:6px">按通话时长划分区间（单位：分钟）</div><div style="display:flex;align-items:center;gap:8px"><input class="form-input" id="level-minutes" type="number" placeholder="通话时长阈值" style="max-width:160px"><span style="font-size:13px;color:var(--ink-2)">分钟及以上</span></div><div class="form-hint">示例：填入 300，则通话时长 ≥ 300分钟时达到此等级</div></div></div>'
+      + '<div class="config-row"><span class="config-label">升级规则</span><div style="flex:1" id="level-rule-area"><div style="font-size:13px;color:var(--ink-2);margin-bottom:6px">按累计消费金币划分门槛（单位：金币）</div><div style="display:flex;align-items:center;gap:8px"><input class="form-input" id="level-coins" type="number" placeholder="累计消费门槛" style="max-width:160px"><span style="font-size:13px;color:var(--ink-2)">金币及以上</span></div><div class="form-hint">示例：填入 5000，则累计消费金币 ≥ 5000 时达到此等级</div></div></div>'
       + '<div class="config-row"><span class="config-label">是否启用</span><div style="display:flex;align-items:center" id="level-enable-area"><label class="switch"><input type="checkbox" id="level-enabled" checked><span class="switch-slider"></span></label><span id="level-status-text" style="font-size:12px;color:var(--green);margin-left:8px">启用中</span></div></div>'
       + '<div class="config-row" style="align-items:flex-start"><span class="config-label">备注</span><textarea class="form-textarea" id="level-remark" placeholder="等级说明备注（选填）" style="max-width:340px;min-height:60px"></textarea></div>'
       + '</div>'
@@ -1437,7 +1437,8 @@ function showLevelModal(name, icon, sort, condition, remark, status) {
   }
   document.getElementById('level-name').value = name || '';
   document.getElementById('level-sort').value = sort || '';
-  document.getElementById('level-minutes').value = '';
+  var coinsVal = condition ? condition.replace(/[^\d]/g, '') : '';
+  document.getElementById('level-coins').value = condition ? coinsVal : '';
   document.getElementById('level-remark').value = remark || '';
   var cb = document.getElementById('level-enabled');
   cb.checked = (status !== '禁用');
@@ -1454,10 +1455,10 @@ function showLevelModal(name, icon, sort, condition, remark, status) {
   var ruleArea = document.getElementById('level-rule-area');
   var enableArea = document.getElementById('level-enable-area');
   if (isDefault) {
-    var minutesInput = document.getElementById('level-minutes');
-    minutesInput.value = '';
-    minutesInput.disabled = true;
-    minutesInput.placeholder = '默认等级无需设置';
+    var coinsInput = document.getElementById('level-coins');
+    coinsInput.value = '';
+    coinsInput.disabled = true;
+    coinsInput.placeholder = '默认等级无需设置';
     ruleArea.style.opacity = '0.5';
     ruleArea.style.pointerEvents = 'none';
     cb.disabled = true;
@@ -1467,9 +1468,9 @@ function showLevelModal(name, icon, sort, condition, remark, status) {
     enableArea.style.opacity = '0.5';
     enableArea.style.pointerEvents = 'none';
   } else {
-    var mi = document.getElementById('level-minutes');
-    mi.disabled = false;
-    mi.placeholder = '通话时长阈值';
+    var ci = document.getElementById('level-coins');
+    ci.disabled = false;
+    ci.placeholder = '累计消费门槛（金币）';
     ruleArea.style.opacity = '';
     ruleArea.style.pointerEvents = '';
     cb.disabled = false;
@@ -1519,6 +1520,9 @@ function confirmLevelSave() {
   var selectedIcon = document.querySelector(".level-icon-option.selected");
   var uploadArea = document.getElementById("level-icon-upload");
   if (!selectedIcon && !uploadArea.classList.contains("has-image")) { alert("请选择或上传身份图标"); return; }
+  var coinsInput = document.getElementById("level-coins");
+  var isDefault = (document.getElementById("level-overlay").dataset.isDefault === '1');
+  if (!isDefault && !coinsInput.value) { alert("请填写累计消费金币门槛"); coinsInput.focus(); return; }
   closeLevelModal();
   alert("已保存等级 " + name);
 }
@@ -1530,19 +1534,26 @@ PAGES['member-level'] = function() {
   // [等级名称, 图标, 排序, 人数, 升级条件, 备注, 添加时间, 状态]
   var rows = [
     ['Lv1','🥉',1,128,'默认等级（注册即获得）','注册即获得的基础等级','2026-07-10 09:00:00','启用'],
-    ['Lv2','🥈',2,86,'通话时长 ≥ 60分钟','一星等级','2026-07-10 09:05:00','启用'],
-    ['Lv3','🥇',3,45,'通话时长 ≥ 300分钟','二星等级','2026-07-10 09:10:00','启用'],
-    ['Lv4','💎',4,18,'通话时长 ≥ 1000分钟','三星等级','2026-07-10 09:15:00','禁用'],
-    ['Lv5','👑',5,5,'通话时长 ≥ 3000分钟','最高等级','2026-07-10 09:20:00','启用'],
+    ['Lv2','🥈',2,86,'累计消费金币 ≥ 1,000','一星等级 · 消费升级','2026-07-10 09:05:00','启用'],
+    ['Lv3','🥇',3,45,'累计消费金币 ≥ 5,000','二星等级 · 消费升级','2026-07-10 09:10:00','启用'],
+    ['Lv4','💎',4,18,'累计消费金币 ≥ 20,000','三星等级 · 消费升级','2026-07-10 09:15:00','禁用'],
+    ['Lv5','👑',5,5,'累计消费金币 ≥ 80,000','最高等级 · 消费升级','2026-07-10 09:20:00','启用'],
   ];
   return `
   <div class="page-title">成长等级</div>
-  <div class="page-desc">配置成长等级及升级条件（Lv1为默认等级，注册即获得）</div>
+  <div class="page-desc">配置成长等级及升级条件（Lv1为默认等级，注册即获得；等级按累计消费金币梯度自动升级）</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">成长机制说明 <span style="font-size:12px;color:var(--ink-3);font-weight:400">按消费额度成长</span></div>
+    <div class="config-section">
+      <div class="config-row"><span class="config-label">成长规则</span><span style="font-size:13px;color:var(--ink);line-height:1.8">用户通过<b style="color:var(--primary)">视频通话、文字聊天、送礼物、守护</b>等途径消费金币，累计消费金币越多，成长越高；达到等级门槛后自动升级，无需手动操作。</span></div>
+      <div class="config-row"><span class="config-label">积分说明</span><span style="font-size:13px;color:var(--ink-2);line-height:1.8">按<b>累计消费金币总额</b>计算成长进度（非余额），等级只升不降；消费途径包括：视频通话、文字聊天、送礼物、守护、速配等所有金币消耗场景。</span></div>
+    </div>
+  </div>
   <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center"><button class="btn btn-primary btn-sm" onclick="showLevelModal()">+ 添加等级</button></div>
   ${filterBar([{label:'等级名称'},{type:'date-range',label:'添加时间'},{type:'select',label:'状态',options:['启用','禁用']}])}
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>等级名称</th><th>图标</th><th>排序</th><th>人数</th><th>升级条件</th><th>备注</th><th>添加时间</th><th>状态</th><th>操作</th></tr></thead>
+      <thead><tr><th>等级名称</th><th>图标</th><th>排序</th><th>人数</th><th>升级条件（累计消费金币）</th><th>备注</th><th>添加时间</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>${rows.map(r=>{
         var isDefault = r[0]==='Lv1';
         var nameCell = r[0] + (isDefault ? '<span style="font-size:11px;color:var(--ink-3);margin-left:4px">默认</span>' : '');
@@ -3569,18 +3580,7 @@ PAGES['rule-billing'] = function() {
     <div class="card-title">金币·钻石分成比例 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（通话 / 聊天 / 礼物等收益结算时，男号扣金币，女号/TS按分成比例折算获得钻石收益）</span></div>
     <div class="config-section">
       <div class="config-row"><span class="config-label">默认分成比例</span><input id="default-rate-input" class="form-input" style="max-width:110px" value="10"> <span style="font-size:12px;color:var(--ink-3)">金币 = 1 钻石（未单独设置的用户按此默认比例结算）</span></div>
-      <div class="config-row" style="align-items:flex-start"><span class="config-label">个人分成比例</span>
-        <div style="flex:1">
-          <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;line-height:1.7">针对指定用户单独设置分成比例，<b>单独设置后默认分成比例对该用户失效</b>，按单独比例结算收益；不需要时，把数值填回默认比例或在设置弹窗中「重置为默认」即可恢复。</div>
-          <div class="table-wrapper" style="box-shadow:none;margin-bottom:12px">
-            <table>
-              <thead><tr><th>用户</th><th>性别</th><th>单独分成比例</th><th>生效规则</th><th>设置时间</th></tr></thead>
-              <tbody id="rate-table-tbody">${buildRateTableHtml()}</tbody>
-            </table>
-          </div>
-          <div style="font-size:12px;color:var(--ink-2);line-height:1.7">此列表仅作汇总展示。需要新增或调整用户的分成比例，请前往 <a href="javascript:navigate('member-list','会员列表')" style="color:var(--primary)">会员列表</a> 或 <a href="javascript:navigate('member-detail','会员详情')" style="color:var(--primary)">会员详情</a>，点击该用户操作中的「分成设置」即可设置或重置。</div>
-        </div>
-      </div>
+      <div style="font-size:12px;color:var(--ink-2);line-height:1.7">需要对个别用户单独设置分成比例？请前往 <a href="javascript:navigate('member-list','会员列表')" style="color:var(--primary)">会员列表</a> 或 <a href="javascript:navigate('member-detail','会员详情')" style="color:var(--primary)">会员详情</a>，点击该用户操作中的「分成设置」即可设置或重置，单独设置后默认比例对该用户失效。</div>
     </div>
   </div>
   <div class="card">
@@ -3666,24 +3666,6 @@ function getUserRateText(uid) {
   var def = (input && input.value) ? input.value : 10;
   if(s) return '<span style="color:var(--orange);font-weight:600">' + s.rate + ' 金币 = 1 钻石</span> <span style="font-size:12px;color:var(--ink-3)">（单独设置 · 默认失效）</span>';
   return def + ' 金币 = 1 钻石（默认比例）';
-}
-function buildRateTableHtml() {
-  var out = '';
-  for(var key in window._rateSettings) {
-    var s = window._rateSettings[key];
-    out += '<tr data-uid="' + key + '">'
-      + '<td>' + avatar(s.name) + ' ' + s.name + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + key + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + (s.phone || '') + '</span></td>'
-      + '<td><span class="gender-tag">' + (s.gender || '') + '</span></td>'
-      + '<td><b>' + s.rate + ' 金币 = 1 钻石</b></td>'
-      + '<td><span style="background:#fff3e0;color:#e66a00;font-size:12px;padding:3px 8px;border-radius:4px;font-weight:600">单独设置 · 默认失效</span></td>'
-      + '<td>' + s.time + '</td>'
-      + '</tr>';
-  }
-  return out;
-}
-function renderRateTable() {
-  var tb = document.getElementById('rate-table-tbody');
-  if(tb) tb.innerHTML = buildRateTableHtml();
 }
 function refreshDetailRate(uid) {
   var el = document.getElementById('detail-rate-text');
@@ -3772,7 +3754,6 @@ function saveRateSetting() {
   if(rate === defRate) {
     var wasSet = !!getRateSetting(uid);
     clearRateSetting(uid);
-    renderRateTable();
     refreshDetailRate(uid);
     closeRateModal();
     showTagToast(wasSet ? '「' + name + '」已恢复默认分成比例：' + defRate + ' 金币 = 1 钻石' : '「' + name + '」数值与默认一致，无需单独设置', 'success');
@@ -3783,7 +3764,6 @@ function saveRateSetting() {
   function pad(n){ return n < 10 ? '0' + n : n; }
   var timeStr = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
   window._rateSettings[uid] = { name: name, gender: gender, phone: tel, rate: rate, time: timeStr };
-  renderRateTable();
   refreshDetailRate(uid);
   closeRateModal();
   showTagToast((existed ? '已更新' : '已添加') + '「' + name + '」单独分成比例：' + rate + ' 金币 = 1 钻石（默认配置对其失效）', 'success');
@@ -3804,7 +3784,6 @@ function resetRateSetting() {
   if(!setting) { closeRateModal(); return; }
   var name = setting.name || uid;
   clearRateSetting(uid);
-  renderRateTable();
   refreshDetailRate(uid);
   closeRateModal();
   showTagToast('「' + name + '」（' + uid + '）已重置为默认分成比例', 'success');
