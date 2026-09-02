@@ -2400,13 +2400,9 @@ function closeCallDetail() {
 // --- Order Chat ---
 PAGES['order-chat'] = function() {
   var mf = window._mutualFree !== false;
-  var statusOpts = mf ? ['正常计费'] : ['正常计费','互关计费'];
   // 免费订单不记录：打招呼免费、互关免费开启时的互关聊天均不生成订单
-  function paidCells(billType, price) {
-    if(billType === 'mutual') {
-      return '<td>' + price + '</td><td><span style="background:rgba(250,173,20,.15);color:#d48806;font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600">互关计费</span></td>';
-    }
-    return '<td>' + price + '</td><td><span style="color:var(--ink-2)">正常计费</span></td>';
+  function paidCells(price) {
+    return '<td>' + price + '</td>';
   }
   var rows = [
     ['CH20260806001','用户A','男','U001','138****8001','用户B','女','U002','139****8002','好的呀，周末有空吗？',5,'2026-08-06 15:35:10','normal'],
@@ -2422,17 +2418,17 @@ PAGES['order-chat'] = function() {
         + '<td>' + userTag(r[1],r[2],r[3],r[4]) + '</td>'
         + '<td>' + userTag(r[5],r[6],r[7],r[8]) + '</td>'
         + '<td style="color:var(--ink-2)">' + r[9] + '</td>'
-        + paidCells(r[12], r[10])
+        + paidCells(r[10])
         + '<td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">' + r[11] + '</td>'
         + '<td><button class="btn-action btn-action-view" onclick="showChatDetail(\'' + r[0] + '\',\'' + r[1] + '\',\'' + r[3] + '\',\'' + r[4] + '\',\'' + r[5] + '\',\'' + r[7] + '\',\'' + r[8] + '\',\'' + r[9] + '\',' + r[10] + ',\'' + r[11] + '\',\'' + r[12] + '\')">详情</button></td></tr>';
     }).join('');
   return `
   <div class="page-title">聊天记录</div>
   <div class="page-desc">查看所有文字聊天订单（免费订单不记录：打招呼免费不生成订单；${mf ? '互关免费开启中，互关用户间聊天免费不生成订单' : '互关免费已关闭，互关用户间聊天按正常价格计费并生成订单'}；男用户向普通对象发消息按聊天价格计费，发送前强制校验余额）</div>
-  ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'select',label:'计费状态',options:statusOpts},{type:'date-range',label:'发送时间'}])}
+  ${filterBar([{label:'订单编号'},{label:'发送方(男)昵称/ID/手机号'},{label:'接收方昵称/ID/手机号'},{type:'date-range',label:'发送时间'}])}
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>订单编号</th><th>发送方(男)</th><th>接收方</th><th>消息内容</th><th>金币消耗</th><th>计费状态</th><th>发送时间</th><th>操作</th></tr></thead>
+      <thead><tr><th>订单编号</th><th>发送方(男)</th><th>接收方</th><th>消息内容</th><th>金币消耗</th><th>发送时间</th><th>操作</th></tr></thead>
       <tbody>
         ${tbody}
       </tbody>
