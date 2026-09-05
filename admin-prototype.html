@@ -1041,6 +1041,290 @@ function applyTrendCustom() {
   if(title) title.innerHTML = s + ' ~ ' + e + ' 充值 / 通话 / 礼物 趋势';
 }
 
+// ===== 账号操作状态（禁用/黑名单/直充） =====
+window._memberOps = {};
+function opsGet(uid) {
+  if(!window._memberOps[uid]) window._memberOps[uid] = { status:null, black:null, coin:null, diamond:null, unbanAt:null, name:'', fromPage:'' };
+  return window._memberOps[uid];
+}
+function opsStatus(uid, def) { var o = window._memberOps[uid]; return (o && o.status) ? o.status : def; }
+function opsBlack(uid, def) { var o = window._memberOps[uid]; return (o && o.black !== null && o.black !== undefined) ? o.black : def; }
+function opsBalance(uid, type, def) { var o = window._memberOps[uid]; return (o && o[type] !== null && o[type] !== undefined) ? o[type] : def; }
+function fmtOpsTime(d) {
+  var p = function(n){ return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function checkAutoUnban() {
+  var now = Date.now();
+  Object.keys(window._memberOps).forEach(function(uid) {
+    var o = window._memberOps[uid];
+    if(o.status === '禁用' && o.unbanAt && o.unbanAt !== '永久') {
+      var t = new Date(String(o.unbanAt).replace(/-/g,'/')).getTime();
+      if(!isNaN(t) && t <= now) {
+        o.status = '正常'; o.unbanAt = null;
+        showTagToast('「' + (o.name || ('用户 ' + uid)) + '」禁用时间已到期，系统已自动解禁', 'success');
+      }
+    }
+  });
+}
+function opsOverlay() {
+  var overlay = document.getElementById('ops-modal-overlay');
+  if(!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'ops-modal-overlay';
+    overlay.className = 'approve-overlay';
+    document.body.appendChild(overlay);
+  }
+  return overlay;
+}
+function closeOpsModal() {
+  var overlay = document.getElementById('ops-modal-overlay');
+  if(overlay) overlay.classList.remove('show');
+}
+function opsModalContext() {
+  var uidEl = document.getElementById('ops-modal-uid');
+  var fromEl = document.getElementById('ops-modal-from');
+  var uid = (uidEl && uidEl.value) || '10001';
+  var o = window._memberOps[uid] || {};
+  return { uid: uid, name: o.name, fromPage: (fromEl && fromEl.value) || o.fromPage || window._opsLastPage || 'member-list' };
+}
+function opsModalHiddenInputs(uid, fromPage) {
+  return '<input type="hidden" id="ops-modal-uid" value="' + uid + '"><input type="hidden" id="ops-modal-from" value="' + (fromPage || 'member-list') + '">';
+}
+function refreshOpsPage() {
+  var page = window._opsLastPage || 'member-list';
+  navigate(page, page === 'member-detail' ? '会员详情' : '会员列表');
+}
+function opsDurationText() {
+  var sel = document.querySelector('input[name="ops-dur"]:checked');
+  if(!sel) return null;
+  var now = new Date();
+  var v = sel.value;
+  if(v === 'forever') return '永久';
+  if(v === 'custom') {
+    var el = document.getElementById('ops-dur-input');
+    if(!el || !el.value) return '';
+    return el.value.replace('T', ' ');
+  }
+  var days = { '24h':1, '3d':3, '7d':7, '30d':30 }[v];
+  return fmtOpsTime(new Date(now.getTime() + days * 86400000));
+}
+function updateDisablePreview() {
+  var custom = document.getElementById('ops-dur-custom');
+  var sel = document.querySelector('input[name="ops-dur"]:checked');
+  if(custom && sel) custom.style.display = sel.value === 'custom' ? 'block' : 'none';
+  var box = document.getElementById('ops-ban-preview');
+  if(!box) return;
+  var t = opsDurationText();
+  if(t === '') { box.textContent = '请选择到期时间'; return; }
+  box.textContent = t === '永久' ? '永久禁用，不会自动解禁。' : '将于 ' + t + ' 到期，系统自动为其解禁。';
+}
+function showDisableModal(uid, name, fromPage) {
+  var o = opsGet(uid);
+  o.name = name; o.fromPage = fromPage || 'member-list';
+  window._opsLastPage = fromPage || 'member-list';
+  var overlay = opsOverlay();
+  var opts = [['24h','24 小时'],['3d','3 天'],['7d','7 天'],['30d','30 天'],['forever','永久禁用'],['custom','自定义到期时间']];
+  var p = function(n){ return (n < 10 ? '0' : '') + n; };
+  var minVal = fmtOpsTime(new Date()).replace(' ', 'T');
+  overlay.innerHTML = '<div class="approve-modal" style="width:480px">'
+    + '<div class="approve-modal-header"><span>禁用账号</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
+    + '<div class="approve-modal-body">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span></div>'
+    + '<div style="margin-bottom:12px"><strong>禁用时长</strong><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">'
+    + opts.map(function(d, i) { return '<label style="display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer"><input type="radio" name="ops-dur" value="' + d[0] + '" onchange="updateDisablePreview()"' + (i === 0 ? ' checked' : '') + '>' + d[1] + '</label>'; }).join('')
+    + '</div></div>'
+    + '<div id="ops-dur-custom" style="display:none;margin-bottom:12px"><strong>到期时间</strong><input id="ops-dur-input" type="datetime-local" class="form-input" style="margin-top:6px" min="' + minVal + '" onchange="updateDisablePreview()"></div>'
+    + '<div style="margin-bottom:12px"><strong>禁用原因</strong><input id="ops-ban-reason" class="form-input" placeholder="选填，将记录到操作日志" style="margin-top:6px"></div>'
+    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.7">禁用后该用户无法登录和使用任何功能。<b id="ops-ban-preview" style="color:var(--orange)"></b></div>'
+    + opsModalHiddenInputs(uid, fromPage)
+    + '</div>'
+    + '<div class="approve-modal-footer"><button class="btn btn-danger" onclick="applyDisable()">确认禁用</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
+  overlay.classList.add('show');
+  updateDisablePreview();
+}
+function applyDisable() {
+  var ctx = opsModalContext();
+  var uid = ctx.uid, name = ctx.name || '用户 ' + uid, fromPage = ctx.fromPage;
+  var t = opsDurationText();
+  if(t === '') { showTagToast('请选择自定义到期时间', 'error'); return; }
+  var target = opsGet(uid);
+  target.status = '禁用';
+  target.unbanAt = t;
+  target.fromPage = fromPage;
+  closeOpsModal();
+  showTagToast(t === '永久' ? '已永久禁用「' + name + '」' : '已禁用「' + name + '」· ' + t + ' 自动解禁', 'success');
+  refreshOpsPage();
+}
+function unbanUserConfirm(uid, name, fromPage) {
+  var o = opsGet(uid);
+  o.name = name; o.fromPage = fromPage || 'member-list';
+  window._opsLastPage = fromPage || 'member-list';
+  var overlay = opsOverlay();
+  overlay.innerHTML = '<div class="approve-modal" style="width:420px">'
+    + '<div class="approve-modal-header"><span>解除禁用</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
+    + '<div class="approve-modal-body">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span></div>'
+    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.7">解除后该用户恢复登录和使用；此前设置的自动解禁时间失效。</div>'
+    + opsModalHiddenInputs(uid, fromPage)
+    + '</div>'
+    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="applyUnban()">确认解除</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
+  overlay.classList.add('show');
+}
+function applyUnban() {
+  var ctx = opsModalContext();
+  var uid = ctx.uid, name = ctx.name || '用户 ' + uid;
+  var target = opsGet(uid);
+  target.status = '正常'; target.unbanAt = null;
+  closeOpsModal();
+  showTagToast('已解除「' + name + '」的禁用', 'success');
+  refreshOpsPage();
+}
+function showBlacklistModal(uid, name, fromPage) {
+  var o = opsGet(uid);
+  o.name = name; o.fromPage = fromPage || 'member-list';
+  window._opsLastPage = fromPage || 'member-list';
+  var overlay = opsOverlay();
+  overlay.innerHTML = '<div class="approve-modal" style="width:440px">'
+    + '<div class="approve-modal-header"><span>加入黑名单</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
+    + '<div class="approve-modal-body">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span></div>'
+    + '<div style="background:var(--red-bg, #fef2f2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--red);line-height:1.7;margin-bottom:12px">⚠ 加入后，该用户的文字、视频等所有消息均无法发送（与「黑名单管理」规则一致）。</div>'
+    + '<div><strong>备注</strong><input id="ops-black-reason" class="form-input" placeholder="选填，将记录到操作日志" style="margin-top:6px"></div>'
+    + opsModalHiddenInputs(uid, fromPage)
+    + '</div>'
+    + '<div class="approve-modal-footer"><button class="btn btn-danger" onclick="applyBlacklist()">确认加入</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
+  overlay.classList.add('show');
+}
+function applyBlacklist() {
+  var ctx = opsModalContext();
+  var uid = ctx.uid, name = ctx.name || '用户 ' + uid;
+  var target = opsGet(uid);
+  target.black = true;
+  closeOpsModal();
+  showTagToast('已将「' + name + '」加入平台黑名单', 'success');
+  refreshOpsPage();
+}
+function removeBlacklistConfirm(uid, name, fromPage) {
+  var o = opsGet(uid);
+  o.name = name; o.fromPage = fromPage || 'member-list';
+  window._opsLastPage = fromPage || 'member-list';
+  var overlay = opsOverlay();
+  overlay.innerHTML = '<div class="approve-modal" style="width:420px">'
+    + '<div class="approve-modal-header"><span>移除黑名单</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
+    + '<div class="approve-modal-body">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span></div>'
+    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.7">移除后该用户恢复正常收发消息。</div>'
+    + opsModalHiddenInputs(uid, fromPage)
+    + '</div>'
+    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="applyRemoveBlacklist()">确认移除</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
+  overlay.classList.add('show');
+}
+function applyRemoveBlacklist() {
+  var ctx = opsModalContext();
+  var uid = ctx.uid, name = ctx.name || '用户 ' + uid;
+  var target = opsGet(uid);
+  target.black = false;
+  closeOpsModal();
+  showTagToast('已将「' + name + '」移出平台黑名单', 'success');
+  refreshOpsPage();
+}
+var RECHARGE_UNITS = { coin: '金币', diamond: '钻石' };
+function opsRechargeCurrent() {
+  var uid = document.getElementById('ops-recharge-uid').value;
+  var type = document.getElementById('ops-recharge-type').value;
+  return type === 'coin' ? opsBalance(uid, 'coin', 1250) : opsBalance(uid, 'diamond', 920);
+}
+function setOpsAmount(v) {
+  var el = document.getElementById('ops-amount');
+  if(el) el.value = v;
+  updateRechargePreview();
+}
+function updateRechargePreview() {
+  var box = document.getElementById('ops-recharge-preview');
+  if(!box) return;
+  var amount = parseInt(document.getElementById('ops-amount').value, 10);
+  var cur = opsRechargeCurrent();
+  var unit = RECHARGE_UNITS[document.getElementById('ops-recharge-type').value];
+  if(isNaN(amount) || amount === 0) {
+    box.style.color = 'var(--ink-2)';
+    box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b>，请输入充值/扣减数值';
+    return;
+  }
+  var next = cur + amount;
+  if(next < 0) {
+    box.style.color = 'var(--red)';
+    box.innerHTML = '当前余额 ' + cur.toLocaleString() + ' ' + unit + ' → 扣减后余额 <b>' + next.toLocaleString() + '</b>，余额不能为负数，请调整金额';
+    return;
+  }
+  box.style.color = 'var(--ink-2)';
+  box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b> → 操作后 <b style="color:' + (amount > 0 ? 'var(--green)' : 'var(--orange)') + '">' + next.toLocaleString() + ' ' + unit + '</b>';
+}
+function showRechargeModal(uid, name, type) {
+  var o = opsGet(uid);
+  o.name = name; o.fromPage = 'member-detail';
+  window._opsLastPage = o.fromPage;
+  var overlay = opsOverlay();
+  var unit = RECHARGE_UNITS[type];
+  var cur = type === 'coin' ? opsBalance(uid, 'coin', 1250) : opsBalance(uid, 'diamond', 920);
+  var chips = type === 'coin' ? [100, 500, 1000, -100, -500] : [50, 200, 500, -50, -200];
+  var title = type === 'coin' ? '直充金币' : '直充钻石';
+  var accent = type === 'coin' ? 'var(--primary)' : 'var(--purple)';
+  overlay.innerHTML = '<div class="approve-modal" style="width:460px">'
+    + '<div class="approve-modal-header"><span>' + title + '</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
+    + '<div class="approve-modal-body">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span> <span style="margin-left:auto;font-size:12px;color:var(--ink-2)">当前余额 <b style="color:' + accent + '">' + cur.toLocaleString() + ' ' + unit + '</b></span></div>'
+    + '<div style="margin-bottom:12px"><strong>充值数量</strong><div style="display:flex;align-items:center;gap:6px;margin-top:6px"><input id="ops-amount" class="form-input" type="number" step="1" placeholder="如 500，扣减填负数如 -100" style="flex:1" oninput="updateRechargePreview()"><span style="font-size:13px;color:var(--ink-2)">' + unit + '</span></div>'
+    + '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">' + chips.map(function(c){ return '<span style="display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;' + (c > 0 ? 'color:var(--primary)' : 'color:var(--orange)') + '" onclick="setOpsAmount(' + c + ')">' + (c > 0 ? '+' : '') + c + '</span>'; }).join('') + '</div>'
+    + '<div style="font-size:12px;color:var(--ink-3);margin-top:6px">支持负数：负数为扣减（反向充值），将直接减少该用户余额</div></div>'
+    + '<div style="margin-bottom:12px"><strong>操作原因</strong><input id="ops-recharge-reason" class="form-input" placeholder="扣减操作必填，将记录到操作日志" style="margin-top:6px"></div>'
+    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7" id="ops-recharge-preview"></div>'
+    + '<input type="hidden" id="ops-recharge-uid" value="' + uid + '"><input type="hidden" id="ops-recharge-type" value="' + type + '">'
+    + '</div>'
+    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="applyRecharge()" style="' + (type === 'coin' ? '' : 'background:var(--purple)') + '">确认' + title + '</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
+  overlay.classList.add('show');
+  updateRechargePreview();
+}
+function applyRecharge() {
+  var uid = document.getElementById('ops-recharge-uid').value;
+  var type = document.getElementById('ops-recharge-type').value;
+  var unit = RECHARGE_UNITS[type];
+  var o = opsGet(uid);
+  var name = o.name || '用户 ' + uid;
+  var amount = parseInt(document.getElementById('ops-amount').value, 10);
+  var reason = document.getElementById('ops-recharge-reason').value.trim();
+  if(isNaN(amount) || amount === 0) { showTagToast('请输入充值/扣减数量（不能为 0）', 'error'); return; }
+  var cur = type === 'coin' ? opsBalance(uid, 'coin', 1250) : opsBalance(uid, 'diamond', 920);
+  if(amount < 0 && !reason) { showTagToast('扣减操作必须填写操作原因', 'error'); return; }
+  var next = cur + amount;
+  if(next < 0) { showTagToast('扣减后余额不能为负数（当前余额 ' + cur.toLocaleString() + ' ' + unit + '）', 'error'); return; }
+  o[type] = next;
+  var el = document.getElementById(type === 'coin' ? 'stat-coin-num' : 'stat-diamond-num');
+  if(el) el.textContent = next.toLocaleString();
+  closeOpsModal();
+  showTagToast(amount > 0 ? '已为「' + name + '」直充 +' + amount.toLocaleString() + ' ' + unit + '，余额 ' + next.toLocaleString() : '已为「' + name + '」扣减 ' + Math.abs(amount).toLocaleString() + ' ' + unit + '，余额 ' + next.toLocaleString() + (reason ? ' · 原因：' + reason : ''), 'success');
+}
+function memberOpsHtml(uid, name) {
+  var o = opsGet(uid);
+  var status = opsStatus(uid, '正常');
+  var black = opsBlack(uid, false);
+  var s = '';
+  if(status === '禁用') {
+    s += '<button class="btn btn-primary" style="background:var(--green)" onclick="unbanUserConfirm(\'' + uid + '\',\'' + name + '\',\'member-detail\')">解除禁用</button>';
+    s += '<span style="font-size:12px;color:var(--orange);align-self:center">' + (o.unbanAt === '永久' ? '已永久禁用' : '禁用中 · ' + (o.unbanAt || '') + ' 自动解禁') + '</span>';
+  } else {
+    s += '<button class="btn btn-danger" onclick="showDisableModal(\'' + uid + '\',\'' + name + '\',\'member-detail\')">禁用账号</button>';
+  }
+  if(black) {
+    s += '<button class="btn btn-default" onclick="removeBlacklistConfirm(\'' + uid + '\',\'' + name + '\',\'member-detail\')">移除黑名单</button>';
+  } else {
+    s += '<button class="btn btn-default" onclick="showBlacklistModal(\'' + uid + '\',\'' + name + '\',\'member-detail\')">加入黑名单</button>';
+  }
+  s += '<button class="btn btn-primary" onclick="showRechargeModal(\'' + uid + '\',\'' + name + '\',\'coin\')">直充金币</button>';
+  s += '<button class="btn btn-primary" style="background:var(--purple)" onclick="showRechargeModal(\'' + uid + '\',\'' + name + '\',\'diamond\')">直充钻石</button>';
+  return s;
+}
+
 // --- Member List ---
 PAGES['member-list'] = function() {
   var rows = [
@@ -1053,6 +1337,12 @@ PAGES['member-list'] = function() {
     ['10007','用户G','133****1111','女','5,600','Lv4','正常', '离线','是','五星','全部认证','2026-07-17 16:47:39','50/5'],
     ['10008','用户H','132****0000','男','750','Lv1','正常', '通话中','否','-','手机认证','2026-07-18 20:12:14','20/2'],
   ];
+  checkAutoUnban();
+  rows.forEach(function(r) {
+    var o = window._memberOps[r[0]];
+    if(o && o.status) r[6] = o.status;
+    if(o && o.black !== null && o.black !== undefined) r[8] = o.black ? '是' : '否';
+  });
   return `
   <div class="page-title">会员列表</div>
   <div class="page-desc">查看和管理所有注册用户</div>
@@ -1073,7 +1363,7 @@ PAGES['member-list'] = function() {
         ${rows.map(r => `<tr>
           <td>${r[0]}</td><td>${avatar(r[1])}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>
           <td>${r[4]}</td><td>${badge(r[5], 'info')}</td>
-          <td>${badge(r[6], r[6]==='正常'?'success':r[6]==='禁用'?'warning':'danger')}</td>
+          <td>${badge(r[6], r[6]==='正常'?'success':r[6]==='禁用'?'warning':'danger')}${(r[6]==='禁用' && window._memberOps[r[0]] && window._memberOps[r[0]].unbanAt) ? `<div style="font-size:11px;color:var(--ink-3);margin-top:2px;white-space:nowrap">${window._memberOps[r[0]].unbanAt==='永久' ? '永久禁用' : '至 '+window._memberOps[r[0]].unbanAt+' 自动解禁'}</div>` : ''}</td>
           <td>${badge(r[8], r[8]==='是'?'danger':'default')}</td>
           <td>${r[9]==='-' ? '<span style="font-size:12px;color:var(--ink-3)">—</span>' : `<span style="color:#f59e0b;font-size:13px">${'★'.repeat({'三星':3,'四星':4,'五星':5}[r[9]])}${'☆'.repeat(5-{'三星':3,'四星':4,'五星':5}[r[9]])}</span> <span style="font-size:12px;color:var(--ink-2);margin-left:2px">${r[9]}</span>`}</td>
           <td>${badge(r[10], r[10]==='全部认证'?'success':r[10]==='未认证'?'default':'info')}</td>
@@ -1083,9 +1373,9 @@ PAGES['member-list'] = function() {
             <button class="btn-action btn-action-view" onclick="navigate('member-detail','会员详情')">详情</button>
             <button class="btn-action btn-action-rate" onclick="showRateModal('${r[0]}','${r[1]}','${r[3]}','${r[2]}')">分成设置</button>
             ${r[12]!=='-' ? `<button class="btn-action btn-action-edit" onclick="editChatPrice('${r[12].split('/')[0]}','${r[12].split('/')[1]}')">改价</button>` : ''}
-            ${r[6]==='禁用' 
-              ? '<button class="btn-action btn-action-unban">取消禁用</button>' 
-              : '<button class="btn-action btn-action-ban">禁用</button>'}
+            ${r[6]==='注销' ? '<span style="font-size:12px;color:var(--ink-3)">—</span>' : (r[6]==='禁用'
+              ? `<button class="btn-action btn-action-unban" onclick="unbanUserConfirm('${r[0]}','${r[1]}','member-list')">取消禁用</button>`
+              : `<button class="btn-action btn-action-ban" onclick="showDisableModal('${r[0]}','${r[1]}','member-list')">禁用</button>`)}
           </td>
         </tr>`).join('')}
       </tbody>
@@ -1096,6 +1386,14 @@ PAGES['member-list'] = function() {
 
 // --- Member Detail ---
 PAGES['member-detail'] = function() {
+  checkAutoUnban();
+  var st = opsStatus('10001', '正常');
+  var stBadge = badge(st, st === '正常' ? 'success' : st === '禁用' ? 'warning' : 'danger');
+  if(st === '禁用' && window._memberOps['10001'] && window._memberOps['10001'].unbanAt) {
+    var uAt = window._memberOps['10001'].unbanAt;
+    stBadge += '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">' + (uAt === '永久' ? '永久禁用 · 不自动解禁' : '至 ' + uAt + ' 自动解禁') + '</div>';
+  }
+  var bk = opsBlack('10001', false);
   // [订单编号, 交易类型, 充值渠道, 支付方式, 收支, 金币变动, 变动后余额, 关联用户, 详情, 时间]
   // 充值：充值渠道为 App/官网/公众号/工作人员，支付方式为 支付宝/微信渠道/内部直充，关联用户为 —
   // 支出：充值渠道和支付方式为 —，关联用户精准到人
@@ -1179,8 +1477,8 @@ PAGES['member-detail'] = function() {
       <div class="info-grid">
         <div class="info-item"><span class="label">颜值评分</span><span class="value"><span style="font-size:12px;color:var(--ink-3)">—</span></span></div>
         <div class="info-item"><span class="label">认证状态</span><span class="value">${badge('实名认证','info')}</span></div>
-        <div class="info-item"><span class="label">用户状态</span><span class="value">${badge('正常','success')}</span></div>
-        <div class="info-item"><span class="label">平台黑名单</span><span class="value">${badge('否','default')}</span></div>
+        <div class="info-item"><span class="label">用户状态</span><span class="value">${stBadge}</span></div>
+        <div class="info-item"><span class="label">平台黑名单</span><span class="value">${bk ? badge('是','danger') : badge('否','default')}</span></div>
         <div class="info-item"><span class="label">成长等级</span><span class="value">Lv3</span></div>
         <div class="info-item"><span class="label">注册时间</span><span class="value">2026-07-11 14:23:05</span></div>
         <div class="info-item"><span class="label">邀请会员</span><span class="value">用户X (ID: 9001)</span></div>
@@ -1206,7 +1504,7 @@ PAGES['member-detail'] = function() {
 
     <div class="tab-panel" id="panel-coin">
       <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-card blue"><div class="num">1,250</div><div class="label">当前金币余额</div></div>
+        <div class="stat-card blue"><div class="num" id="stat-coin-num">${opsBalance('10001','coin',1250).toLocaleString()}</div><div class="label">当前金币余额</div></div>
         <div class="stat-card green"><div class="num">5,200</div><div class="label">累计充值</div></div>
         <div class="stat-card orange"><div class="num">4,238</div><div class="label">累计消耗</div></div>
         <div class="stat-card purple"><div class="num">520</div><div class="label">累计签到奖励</div></div>
@@ -1242,7 +1540,7 @@ PAGES['member-detail'] = function() {
 
     <div class="tab-panel" id="panel-diamond">
       <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-card blue"><div class="num">920</div><div class="label">当前钻石余额</div></div>
+        <div class="stat-card blue"><div class="num" id="stat-diamond-num">${opsBalance('10001','diamond',920).toLocaleString()}</div><div class="label">当前钻石余额</div></div>
         <div class="stat-card green"><div class="num">2,120</div><div class="label">累计收益</div></div>
         <div class="stat-card orange"><div class="num">1,800</div><div class="label">累计提现扣除</div></div>
         <div class="stat-card purple"><div class="num">530</div><div class="label">今日收益</div></div>
@@ -1309,13 +1607,9 @@ PAGES['member-detail'] = function() {
     </div>
   </div>
   <div class="card">
-    <div class="card-title">账号操作</div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <button class="btn btn-danger">禁用账号</button>
-      <button class="btn btn-default">加入黑名单</button>
-      <button class="btn btn-default" style="display:none">移除黑名单</button>
-      <button class="btn btn-primary">直充金币</button>
-      <button class="btn btn-primary" style="background:var(--purple)">直充钻石</button>
+    <div class="card-title">账号操作 <span style="font-size:12px;font-weight:400;color:var(--ink-2);margin-left:6px">所有操作将记录到操作日志</span></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      ${memberOpsHtml('10001','用户A')}
     </div>
   </div>`;
 };
