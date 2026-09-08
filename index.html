@@ -1180,55 +1180,6 @@ function applyUnban() {
   showTagToast('已解除「' + name + '」的禁用', 'success');
   refreshOpsPage();
 }
-function showBlacklistModal(uid, name, fromPage) {
-  var o = opsGet(uid);
-  o.name = name; o.fromPage = fromPage || 'member-list';
-  window._opsLastPage = fromPage || 'member-list';
-  var overlay = opsOverlay();
-  overlay.innerHTML = '<div class="approve-modal" style="width:440px">'
-    + '<div class="approve-modal-header"><span>加入黑名单</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
-    + '<div class="approve-modal-body">'
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span></div>'
-    + '<div style="background:var(--red-bg, #fef2f2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--red);line-height:1.7;margin-bottom:12px">⚠ 加入后，该用户的文字、视频等所有消息均无法发送（与「黑名单管理」规则一致）。</div>'
-    + '<div><strong>备注</strong><input id="ops-black-reason" class="form-input" placeholder="选填，将记录到操作日志" style="margin-top:6px"></div>'
-    + opsModalHiddenInputs(uid, fromPage)
-    + '</div>'
-    + '<div class="approve-modal-footer"><button class="btn btn-danger" onclick="applyBlacklist()">确认加入</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
-  overlay.classList.add('show');
-}
-function applyBlacklist() {
-  var ctx = opsModalContext();
-  var uid = ctx.uid, name = ctx.name || '用户 ' + uid;
-  var target = opsGet(uid);
-  target.black = true;
-  closeOpsModal();
-  showTagToast('已将「' + name + '」加入平台黑名单', 'success');
-  refreshOpsPage();
-}
-function removeBlacklistConfirm(uid, name, fromPage) {
-  var o = opsGet(uid);
-  o.name = name; o.fromPage = fromPage || 'member-list';
-  window._opsLastPage = fromPage || 'member-list';
-  var overlay = opsOverlay();
-  overlay.innerHTML = '<div class="approve-modal" style="width:420px">'
-    + '<div class="approve-modal-header"><span>移除黑名单</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
-    + '<div class="approve-modal-body">'
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span></div>'
-    + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.7">移除后该用户恢复正常收发消息。</div>'
-    + opsModalHiddenInputs(uid, fromPage)
-    + '</div>'
-    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="applyRemoveBlacklist()">确认移除</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
-  overlay.classList.add('show');
-}
-function applyRemoveBlacklist() {
-  var ctx = opsModalContext();
-  var uid = ctx.uid, name = ctx.name || '用户 ' + uid;
-  var target = opsGet(uid);
-  target.black = false;
-  closeOpsModal();
-  showTagToast('已将「' + name + '」移出平台黑名单', 'success');
-  refreshOpsPage();
-}
 var RECHARGE_UNITS = { coin: '金币', diamond: '钻石' };
 function opsRechargeCurrent() {
   var uid = document.getElementById('ops-recharge-uid').value;
@@ -1307,18 +1258,12 @@ function applyRecharge() {
 function memberOpsHtml(uid, name) {
   var o = opsGet(uid);
   var status = opsStatus(uid, '正常');
-  var black = opsBlack(uid, false);
   var s = '';
   if(status === '禁用') {
     s += '<button class="btn btn-primary" style="background:var(--green)" onclick="unbanUserConfirm(\'' + uid + '\',\'' + name + '\',\'member-detail\')">解除禁用</button>';
     s += '<span style="font-size:12px;color:var(--orange);align-self:center">' + (o.unbanAt === '永久' ? '已永久禁用' : '禁用中 · ' + (o.unbanAt || '') + ' 自动解禁') + '</span>';
   } else {
     s += '<button class="btn btn-danger" onclick="showDisableModal(\'' + uid + '\',\'' + name + '\',\'member-detail\')">禁用账号</button>';
-  }
-  if(black) {
-    s += '<button class="btn btn-default" onclick="removeBlacklistConfirm(\'' + uid + '\',\'' + name + '\',\'member-detail\')">移除黑名单</button>';
-  } else {
-    s += '<button class="btn btn-default" onclick="showBlacklistModal(\'' + uid + '\',\'' + name + '\',\'member-detail\')">加入黑名单</button>';
   }
   s += '<button class="btn btn-primary" onclick="showRechargeModal(\'' + uid + '\',\'' + name + '\',\'coin\')">直充金币</button>';
   s += '<button class="btn btn-primary" style="background:var(--purple)" onclick="showRechargeModal(\'' + uid + '\',\'' + name + '\',\'diamond\')">直充钻石</button>';
