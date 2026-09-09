@@ -2620,6 +2620,14 @@ function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, 
   var ratingRow = (label, rating) => rating !== undefined
     ? '<tr><td style="color:var(--ink-3);width:120px">' + label + '</td><td><span style="color:#f59e0b">★</span> ' + rating.toFixed(1) + ' 分</td></tr>'
     : '<tr><td style="color:var(--ink-3);width:120px">' + label + '</td><td style="color:var(--ink-3)">—</td></tr>';
+  // 转化钻石：接听方按分成比例将拨打方消耗的金币折算为钻石（单独设置优先，默认比例兜底），小数向下取整
+  var coinNum = parseInt(coins, 10) || 0;
+  var rateObj = getRateSetting(calleeId);
+  var rateInput = document.getElementById('default-rate-input');
+  var rate = rateObj ? rateObj.rate : ((rateInput && rateInput.value) ? parseInt(rateInput.value, 10) : 50);
+  var diamondTxt = coinNum > 0
+    ? '<b>' + Math.floor(coinNum * rate / 100) + ' 钻石</b> <span style="font-size:12px;color:var(--ink-3)">（' + coins + ' 金币 × ' + rate + '% 分成比例，小数向下取整，结算给接听方）</span>'
+    : '<span style="color:var(--ink-3)">—（未产生通话消费，无钻石结算）</span>';
   overlay.innerHTML = '<div class="approve-modal" style="width:480px">'
     + '<div class="approve-modal-header"><span>通话详情</span><button class="reject-modal-close" onclick="closeCallDetail()">&times;</button></div>'
     + '<div class="approve-modal-body">'
@@ -2629,10 +2637,11 @@ function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, 
     + '<tr><td style="color:var(--ink-3)">接听方</td><td>' + calleeName + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + calleeId + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + calleePhone + '</span></td></tr>'
     + '<tr><td style="color:var(--ink-3)">通话时长</td><td>' + duration + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">金币消耗</td><td>' + coins + ' 金币</td></tr>'
+    + '<tr><td style="color:var(--ink-3)">转化钻石</td><td>' + diamondTxt + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">创建时间</td><td style="font-family:monospace">' + time + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">状态</td><td>' + statusBadge + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">状态说明</td><td style="color:var(--ink-3);font-size:12px">' + statusNote + '</td></tr>'
-    + ratingRow('接听方评分', calleeRating)
+    + ratingRow('拨打方评分', callerRating)
     + '</table>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-default" onclick="closeCallDetail()">关闭</button></div></div>';
