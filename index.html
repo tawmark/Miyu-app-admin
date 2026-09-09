@@ -1286,7 +1286,6 @@ PAGES['member-list'] = function() {
   rows.forEach(function(r) {
     var o = window._memberOps[r[0]];
     if(o && o.status) r[6] = o.status;
-    if(o && o.black !== null && o.black !== undefined) r[8] = o.black ? '是' : '否';
   });
   return `
   <div class="page-title">会员列表</div>
@@ -1295,7 +1294,6 @@ PAGES['member-list'] = function() {
     {label:'ID/昵称/手机号'},
     {type:'select',label:'性别',options:['男','女','TS']},
     {type:'select',label:'用户状态',options:['正常','禁用','注销']},
-    {type:'select',label:'平台黑名单',options:['是','否']},
     {type:'select',label:'颜值评分',options:['三星','四星','五星']},
     {type:'select',label:'认证状态',options:['未认证','实名认证','视频认证','手机认证','全部认证']},
     {type:'select',label:'等级',options:['Lv1','Lv2','Lv3','Lv4','Lv5']},
@@ -1303,13 +1301,12 @@ PAGES['member-list'] = function() {
   ])}
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>ID</th><th>头像</th><th>昵称</th><th>手机号</th><th>性别</th><th>金币余额</th><th>等级</th><th>用户状态</th><th>平台黑名单</th><th>颜值评分</th><th>认证状态</th><th>聊天价格</th><th>注册时间</th><th>操作</th></tr></thead>
+      <thead><tr><th>ID</th><th>头像</th><th>昵称</th><th>手机号</th><th>性别</th><th>金币余额</th><th>等级</th><th>用户状态</th><th>颜值评分</th><th>认证状态</th><th>聊天价格</th><th>注册时间</th><th>操作</th></tr></thead>
       <tbody>
         ${rows.map(r => `<tr>
           <td>${r[0]}</td><td>${avatar(r[1])}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>
           <td>${r[4]}</td><td>${badge(r[5], 'info')}</td>
           <td>${badge(r[6], r[6]==='正常'?'success':r[6]==='禁用'?'warning':'danger')}${(r[6]==='禁用' && window._memberOps[r[0]] && window._memberOps[r[0]].unbanAt) ? `<div style="font-size:11px;color:var(--ink-3);margin-top:2px;white-space:nowrap">${window._memberOps[r[0]].unbanAt==='永久' ? '永久禁用' : '至 '+window._memberOps[r[0]].unbanAt+' 自动解禁'}</div>` : ''}</td>
-          <td>${badge(r[8], r[8]==='是'?'danger':'default')}</td>
           <td>${r[9]==='-' ? '<span style="font-size:12px;color:var(--ink-3)">—</span>' : `<span style="color:#f59e0b;font-size:13px">${'★'.repeat({'三星':3,'四星':4,'五星':5}[r[9]])}${'☆'.repeat(5-{'三星':3,'四星':4,'五星':5}[r[9]])}</span> <span style="font-size:12px;color:var(--ink-2);margin-left:2px">${r[9]}</span>`}</td>
           <td>${badge(r[10], r[10]==='全部认证'?'success':r[10]==='未认证'?'default':'info')}</td>
           <td style="white-space:nowrap;font-size:12px">${r[12]==='-' ? '<span style="color:var(--ink-3)">—</span>' : `<span>视频<span style="color:var(--primary);font-weight:600">${r[12].split('/')[0]}</span> · 文字<span style="color:var(--primary);font-weight:600">${r[12].split('/')[1]}</span></span>`}</td>
@@ -1338,7 +1335,6 @@ PAGES['member-detail'] = function() {
     var uAt = window._memberOps['10001'].unbanAt;
     stBadge += '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">' + (uAt === '永久' ? '永久禁用 · 不自动解禁' : '至 ' + uAt + ' 自动解禁') + '</div>';
   }
-  var bk = opsBlack('10001', false);
   // [订单编号, 交易类型, 充值渠道, 支付方式, 收支, 金币变动, 变动后余额, 关联用户, 详情, 时间]
   // 充值：充值渠道为 App/官网/公众号/工作人员，支付方式为 支付宝/微信渠道/内部直充，关联用户为 —
   // 支出：充值渠道和支付方式为 —，关联用户精准到人
@@ -1423,7 +1419,6 @@ PAGES['member-detail'] = function() {
         <div class="info-item"><span class="label">颜值评分</span><span class="value"><span style="font-size:12px;color:var(--ink-3)">—</span></span></div>
         <div class="info-item"><span class="label">认证状态</span><span class="value">${badge('实名认证','info')}</span></div>
         <div class="info-item"><span class="label">用户状态</span><span class="value">${stBadge}</span></div>
-        <div class="info-item"><span class="label">平台黑名单</span><span class="value">${bk ? badge('是','danger') : badge('否','default')}</span></div>
         <div class="info-item"><span class="label">成长等级</span><span class="value">Lv3</span></div>
         <div class="info-item"><span class="label">注册时间</span><span class="value">2026-07-11 14:23:05</span></div>
         <div class="info-item"><span class="label">邀请会员</span><span class="value">用户X (ID: 9001)</span></div>
