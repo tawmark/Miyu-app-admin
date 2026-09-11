@@ -3706,26 +3706,31 @@ PAGES['rec-greet'] = function() {
   <div class="page-title">自动打招呼管理</div>
   <div class="page-desc">配置自动打招呼预置语句及触发规则（打招呼免费，不扣金币）</div>
   <div class="card">
-    <div class="card-title">预置语句管理 — 男号快捷语句</div>
-    <div class="table-wrapper" style="box-shadow:none;margin-bottom:16px">
-      <table>
-        <thead><tr><th>排序</th><th>语句内容</th><th>操作</th></tr></thead>
-        <tbody>${male.map((s,i)=>`<tr><td>${i+1}</td><td>${s}</td><td><button class="btn-action btn-action-edit" onclick="showGreetModal('edit','男号',${i},'${s}')">编辑</button> <button class="btn-action btn-action-ban" onclick="showGreetModal('delete','男号',${i},'${s}')">删除</button></td></tr>`).join('')}</tbody>
-      </table>
+    <div class="card-title">预置语句管理 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（按性别切换配置，保存后对前台对应性别用户生效）</span></div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'greet-panel-male')">男号快捷语句</div>
+      <div class="tab" onclick="switchTab(this,'greet-panel-female')">女号/TS 快捷语句</div>
     </div>
-    <button class="btn btn-primary btn-sm" onclick="showGreetModal('add','男号')">+ 添加男号语句</button>
-  </div>
-  <div class="card">
-    <div class="card-title">预置语句管理 — 女号/TS快捷语句</div>
-    <div class="table-wrapper" style="box-shadow:none;margin-bottom:16px">
-      <table>
-        <thead><tr><th>排序</th><th>语句内容</th><th>操作</th></tr></thead>
-        <tbody>${female.map((s,i)=>`<tr><td>${i+1}</td><td>${s}</td><td><button class="btn-action btn-action-edit" onclick="showGreetModal('edit','女号/TS',${i},'${s}')">编辑</button> <button class="btn-action btn-action-ban" onclick="showGreetModal('delete','女号/TS',${i},'${s}')">删除</button></td></tr>`).join('')}</tbody>
-      </table>
+    <div class="tab-panel active" id="greet-panel-male">
+      <div class="table-wrapper" style="box-shadow:none;margin-bottom:16px">
+        <table>
+          <thead><tr><th>排序</th><th>语句内容</th><th>操作</th></tr></thead>
+          <tbody>${male.map((s,i)=>`<tr><td>${i+1}</td><td>${s}</td><td><button class="btn-action btn-action-edit" onclick="showGreetModal('edit','男号',${i},'${s}')">编辑</button> <button class="btn-action btn-action-ban" onclick="showGreetModal('delete','男号',${i},'${s}')">删除</button></td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="showGreetModal('add','男号')">+ 添加男号语句</button>
     </div>
-    <button class="btn btn-primary btn-sm" onclick="showGreetModal('add','女号/TS')">+ 添加女号/TS语句</button>
-  </div>
-  <button class="btn btn-primary">保存全部配置</button>`;
+    <div class="tab-panel" id="greet-panel-female">
+      <div class="table-wrapper" style="box-shadow:none;margin-bottom:16px">
+        <table>
+          <thead><tr><th>排序</th><th>语句内容</th><th>操作</th></tr></thead>
+          <tbody>${female.map((s,i)=>`<tr><td>${i+1}</td><td>${s}</td><td><button class="btn-action btn-action-edit" onclick="showGreetModal('edit','女号/TS',${i},'${s}')">编辑</button> <button class="btn-action btn-action-ban" onclick="showGreetModal('delete','女号/TS',${i},'${s}')">删除</button></td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="showGreetModal('add','女号/TS')">+ 添加女号/TS语句</button>
+    </div>
+    <div style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px"><button class="btn btn-primary">保存全部配置</button></div>
+  </div>`;
 };
 
 // --- Greet Statement Modal ---
