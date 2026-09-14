@@ -1277,7 +1277,7 @@ PAGES['member-list'] = function() {
     ['10003','用户C','137****5555','男','560','Lv1','禁用', '离线','否','-','手机认证','2026-07-13 18:42:17','20/2'],
     ['10004','用户D','136****4444','女','3,200','Lv5','正常', '通话中','否','五星','视频认证','2026-07-14 22:05:48','50/5'],
     ['10005','用户E','135****3333','TS','1,800','Lv2','注销', '离线','否','四星','实名认证','2026-07-15 11:30:26','40/3'],
-    ['10006','用户F','134****2222','男','320','Lv1','正常', '在线','否','-','未认证','2026-07-16 08:18:52','-'],
+    ['10006','用户F','134****2222','男','320','Lv1','正常', '在线','否','-','手机认证','2026-07-16 08:18:52','-'],
     ['10007','用户G','133****1111','女','5,600','Lv4','正常', '离线','是','五星','全部认证','2026-07-17 16:47:39','50/5'],
     ['10008','用户H','132****0000','男','750','Lv1','正常', '通话中','否','-','手机认证','2026-07-18 20:12:14','20/2'],
   ];
@@ -1294,7 +1294,7 @@ PAGES['member-list'] = function() {
     {type:'select',label:'性别',options:['男','女','TS']},
     {type:'select',label:'用户状态',options:['正常','禁用','注销']},
     {type:'select',label:'颜值评分',options:['三星','四星','五星']},
-    {type:'select',label:'认证状态',options:['未认证','实名认证','视频认证','手机认证','全部认证']},
+    {type:'select',label:'认证状态',options:['实名认证','视频认证','手机认证','全部认证']},
     {type:'select',label:'等级',options:['Lv1','Lv2','Lv3','Lv4','Lv5']},
     {type:'date-range',label:'注册时间'},
   ])}
@@ -1307,7 +1307,7 @@ PAGES['member-list'] = function() {
           <td>${r[4]}</td><td>${badge(r[5], 'info')}</td>
           <td>${badge(r[6], r[6]==='正常'?'success':r[6]==='禁用'?'warning':'danger')}${(r[6]==='禁用' && window._memberOps[r[0]] && window._memberOps[r[0]].unbanAt) ? `<div style="font-size:11px;color:var(--ink-3);margin-top:2px;white-space:nowrap">${window._memberOps[r[0]].unbanAt==='永久' ? '永久禁用' : '至 '+window._memberOps[r[0]].unbanAt+' 自动解禁'}</div>` : ''}</td>
           <td>${r[9]==='-' ? '<span style="font-size:12px;color:var(--ink-3)">—</span>' : `<span style="color:#f59e0b;font-size:13px">${'★'.repeat({'三星':3,'四星':4,'五星':5}[r[9]])}${'☆'.repeat(5-{'三星':3,'四星':4,'五星':5}[r[9]])}</span> <span style="font-size:12px;color:var(--ink-2);margin-left:2px">${r[9]}</span>`}</td>
-          <td>${badge(r[10], r[10]==='全部认证'?'success':r[10]==='未认证'?'default':'info')}</td>
+          <td>${badge(r[10], r[10]==='全部认证'?'success':'info')}</td>
           <td style="white-space:nowrap;font-size:12px">${r[12]==='-' ? '<span style="color:var(--ink-3)">—</span>' : `<span>视频<span style="color:var(--primary);font-weight:600">${r[12].split('/')[0]}</span> · 文字<span style="color:var(--primary);font-weight:600">${r[12].split('/')[1]}</span></span>`}</td>
           <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r[11]}</td>
           <td style="white-space:nowrap">
