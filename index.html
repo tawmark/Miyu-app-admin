@@ -2587,21 +2587,26 @@ PAGES['order-call'] = function() {
   ${filterBar([{label:'订单编号'},{label:'拨打方昵称/ID/手机号'},{label:'接听方昵称/ID/手机号'},{type:'select',label:'状态',options:['已结束','未接听','已取消','已挂断']},{type:'date-range',label:'创建时间'}])}
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>订单编号</th><th>拨打方</th><th>接听方</th><th>通话时长</th><th>金币数量</th><th>创建时间</th><th>状态</th><th>操作</th></tr></thead>
+      <thead><tr><th>订单编号</th><th>拨打方</th><th>接听方</th><th>通话时长</th><th>金币数量</th><th>通话单价</th><th>创建时间</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806001</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td>5分20秒</td><td>53</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:30:25</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806001','用户A','U001','138****8001','用户B','U002','139****8002','5分20秒','53','2026-08-06 14:30:25','已结束',4.8,4.5)">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806002</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${userTag('用户D','女','U004','136****8004')}</td><td>12分05秒</td><td>120</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:15:10</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806002','用户C','U003','137****8003','用户D','U004','136****8004','12分05秒','120','2026-08-06 13:15:10','已结束',5.0,4.2)">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806003</td><td>${userTag('用户E','男','U005','135****8005')}</td><td>${userTag('用户F','女','U006','134****8006')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 12:00:00</td><td>${badge('未接听','warning')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806003','用户E','U005','135****8005','用户F','U006','134****8006','0分00秒','0','2026-08-06 12:00:00','未接听')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806004</td><td>${userTag('用户H','男','U007','133****8007')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td>8分30秒</td><td>85</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:45:33</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806004','用户H','U007','133****8007','用户B','U002','139****8002','8分30秒','85','2026-08-06 11:45:33','已结束',4.0,4.7)">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806005</td><td>${userTag('用户I','男','U008','132****8008')}</td><td>${userTag('用户J','女','U009','131****8009')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 10:20:18</td><td>${badge('已挂断','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806005','用户I','U008','132****8008','用户J','U009','131****8009','0分00秒','0','2026-08-06 10:20:18','已挂断')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806006</td><td>${userTag('用户K','男','U010','130****8010')}</td><td>${userTag('用户L','女','U011','188****8011')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 09:30:00</td><td>${badge('已取消','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806006','用户K','U010','130****8010','用户L','U011','188****8011','0分00秒','0','2026-08-06 09:30:00','已取消')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">CO20260806007</td><td>${userTag('用户M','男','U012','187****8012')}</td><td>${userTag('用户N','女','U013','186****8013')}</td><td>0分00秒</td><td>0</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 08:15:42</td><td>${badge('已挂断','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806007','用户M','U012','187****8012','用户N','U013','186****8013','0分00秒','0','2026-08-06 08:15:42','已挂断')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806001</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td>5分20秒</td><td>53</td><td>10 金币/分</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:30:25</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806001','用户A','U001','138****8001','用户B','U002','139****8002','5分20秒','53','2026-08-06 14:30:25','已结束',4.8)">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806002</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${userTag('用户D','女','U004','136****8004')}</td><td>12分05秒</td><td>120</td><td>10 金币/分</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:15:10</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806002','用户C','U003','137****8003','用户D','U004','136****8004','12分05秒','120','2026-08-06 13:15:10','已结束',5.0)">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806003</td><td>${userTag('用户E','男','U005','135****8005')}</td><td>${userTag('用户F','女','U006','134****8006')}</td><td>0分00秒</td><td>0</td><td>—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 12:00:00</td><td>${badge('未接听','warning')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806003','用户E','U005','135****8005','用户F','U006','134****8006','0分00秒','0','2026-08-06 12:00:00','未接听')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806004</td><td>${userTag('用户H','男','U007','133****8007')}</td><td>${userTag('用户B','女','U002','139****8002')}</td><td>8分30秒</td><td>85</td><td>10 金币/分</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:45:33</td><td>${badge('已结束','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806004','用户H','U007','133****8007','用户B','U002','139****8002','8分30秒','85','2026-08-06 11:45:33','已结束',4.0)">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806005</td><td>${userTag('用户I','男','U008','132****8008')}</td><td>${userTag('用户J','女','U009','131****8009')}</td><td>0分00秒</td><td>0</td><td>—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 10:20:18</td><td>${badge('已挂断','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806005','用户I','U008','132****8008','用户J','U009','131****8009','0分00秒','0','2026-08-06 10:20:18','已挂断')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806006</td><td>${userTag('用户K','男','U010','130****8010')}</td><td>${userTag('用户L','女','U011','188****8011')}</td><td>0分00秒</td><td>0</td><td>—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 09:30:00</td><td>${badge('已取消','default')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806006','用户K','U010','130****8010','用户L','U011','188****8011','0分00秒','0','2026-08-06 09:30:00','已取消')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">CO20260806007</td><td>${userTag('用户M','男','U012','187****8012')}</td><td>${userTag('用户N','女','U013','186****8013')}</td><td>0分00秒</td><td>0</td><td>—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 08:15:42</td><td>${badge('已挂断','danger')}</td><td><button class="btn-action btn-action-view" onclick="showCallDetail('CO20260806007','用户M','U012','187****8012','用户N','U013','186****8013','0分00秒','0','2026-08-06 08:15:42','已挂断')">详情</button></td></tr>
       </tbody>
     </table>
     ${pagination()}
   </div>`;
 };
-function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, calleeId, calleePhone, duration, coins, time, status, callerRating, calleeRating) {
+function parseDurationToSeconds(d) {
+  var m = /^(\d+)分(\d+)秒$/.exec(d || '');
+  if (!m) return 0;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, calleeId, calleePhone, duration, coins, time, status, callerRating) {
   var overlay = document.getElementById('call-detail-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -2620,8 +2625,13 @@ function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, 
   var ratingRow = (label, rating) => rating !== undefined
     ? '<tr><td style="color:var(--ink-3);width:120px">' + label + '</td><td><span style="color:#f59e0b">★</span> ' + rating.toFixed(1) + ' 分</td></tr>'
     : '<tr><td style="color:var(--ink-3);width:120px">' + label + '</td><td style="color:var(--ink-3)">—</td></tr>';
-  // 转化钻石：接听方按分成比例将拨打方消耗的金币折算为钻石（单独设置优先，默认比例兜底），小数向下取整
+  // 通话单价：按金币 ÷ 通话秒数 × 60 折算为金币/分钟，小数向下取整（未产生通话时长时不显示）
   var coinNum = parseInt(coins, 10) || 0;
+  var seconds = parseDurationToSeconds(duration);
+  var unitPriceTxt = seconds > 0
+    ? '<b>' + Math.floor(coinNum / seconds * 60) + ' 金币/分钟</b> <span style="font-size:12px;color:var(--ink-3)">（' + coins + ' 金币 ÷ ' + seconds + ' 秒 × 60 秒，小数向下取整）</span>'
+    : '<span style="color:var(--ink-3)">—（未产生通话时长，不计算单价）</span>';
+  // 转化钻石：接听方按分成比例将拨打方消耗的金币折算为钻石（单独设置优先，默认比例兜底），小数向下取整
   var rateObj = getRateSetting(calleeId);
   var rateInput = document.getElementById('default-rate-input');
   var rate = rateObj ? rateObj.rate : ((rateInput && rateInput.value) ? parseInt(rateInput.value, 10) : 50);
@@ -2636,12 +2646,13 @@ function showCallDetail(orderId, callerName, callerId, callerPhone, calleeName, 
     + '<tr><td style="color:var(--ink-3)">拨打方</td><td>' + callerName + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + callerId + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + callerPhone + '</span></td></tr>'
     + '<tr><td style="color:var(--ink-3)">接听方</td><td>' + calleeName + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + calleeId + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + calleePhone + '</span></td></tr>'
     + '<tr><td style="color:var(--ink-3)">通话时长</td><td>' + duration + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3)">通话单价</td><td>' + unitPriceTxt + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">金币消耗</td><td>' + coins + ' 金币</td></tr>'
     + '<tr><td style="color:var(--ink-3)">转化钻石</td><td>' + diamondTxt + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">创建时间</td><td style="font-family:monospace">' + time + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">状态</td><td>' + statusBadge + '</td></tr>'
     + '<tr><td style="color:var(--ink-3)">状态说明</td><td style="color:var(--ink-3);font-size:12px">' + statusNote + '</td></tr>'
-    + ratingRow('拨打方评分', callerRating)
+    + ratingRow('男号评分', callerRating)
     + '</table>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-default" onclick="closeCallDetail()">关闭</button></div></div>';
