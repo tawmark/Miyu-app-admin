@@ -1206,19 +1206,19 @@ function updateRechargePreview() {
   var deduct = opsIsDeduction();
   var cur = opsRechargeCurrent();
   var unit = RECHARGE_UNITS[document.getElementById('ops-recharge-type').value];
-  if(!Number.isSafeInteger(amount) || amount <= 0) {
+  if(!Number.isFinite(amount) || amount <= 0) {
     box.style.color = 'var(--ink-2)';
-    box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b>，请输入' + (deduct ? '补扣' : '充值') + '数量（正整数）';
+    box.innerHTML = '当前余额 <b>' + cur.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '</b>，请输入' + (deduct ? '补扣' : '充值') + '数量（正数）';
     return;
   }
   var next = deduct ? cur - amount : cur + amount;
-  if(next < 0 || !Number.isSafeInteger(next)) {
+  if(next < 0 || !Number.isFinite(next)) {
     box.style.color = 'var(--red)';
     box.textContent = next < 0 ? '补扣数量超过当前余额，扣后余额不能为负数' : '充值数量过大，请调整数量';
     return;
   }
   box.style.color = 'var(--ink-2)';
-  box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b> → ' + (deduct ? '补扣后' : '充值后') + ' <b style="color:' + (deduct ? 'var(--orange)' : 'var(--green)') + '">' + next.toLocaleString() + ' ' + unit + '</b>';
+  box.innerHTML = '当前余额 <b>' + cur.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '</b> → ' + (deduct ? '补扣后' : '充值后') + ' <b style="color:' + (deduct ? 'var(--orange)' : 'var(--green)') + '">' + next.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '</b>';
 }
 function showRechargeModal(uid, name, type, mode) {
   var deduct = mode === 'deduct';
@@ -1234,9 +1234,9 @@ function showRechargeModal(uid, name, type, mode) {
   overlay.innerHTML = '<div class="approve-modal" style="width:460px">'
     + '<div class="approve-modal-header"><span>' + title + '</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
     + '<div class="approve-modal-body">'
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span> <span style="margin-left:auto;font-size:12px;color:var(--ink-2)">当前余额 <b style="color:' + accent + '">' + cur.toLocaleString() + ' ' + unit + '</b></span></div>'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span> <span style="margin-left:auto;font-size:12px;color:var(--ink-2)">当前余额 <b style="color:' + accent + '">' + cur.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '</b></span></div>'
     + (deduct ? '<div style="margin-bottom:12px"><strong>补扣币种</strong><select class="form-input" style="margin-top:6px" onchange="switchDeductionType(this.value)"><option value="coin"' + (type === 'coin' ? ' selected' : '') + '>金币</option><option value="diamond"' + (type === 'diamond' ? ' selected' : '') + '>钻石</option></select></div>' : '')
-    + '<div style="margin-bottom:12px"><strong>' + (deduct ? '补扣数量' : '充值数量') + '</strong><div style="display:flex;align-items:center;gap:6px;margin-top:6px"><input id="ops-amount" class="form-input" type="number" min="1" step="1" placeholder="请输入正整数，如 500" style="flex:1" oninput="updateRechargePreview()"><span style="font-size:13px;color:var(--ink-2)">' + unit + '</span></div>'
+    + '<div style="margin-bottom:12px"><strong>' + (deduct ? '补扣数量' : '充值数量') + '</strong><div style="display:flex;align-items:center;gap:6px;margin-top:6px"><input id="ops-amount" class="form-input" type="number" min="0" step="any" placeholder="请输入正数，如 500 或 0.5" style="flex:1" oninput="updateRechargePreview()"><span style="font-size:13px;color:var(--ink-2)">' + unit + '</span></div>'
     + '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">' + chips.map(function(c){ return '<span style="display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;color:var(--primary)" onclick="setOpsAmount(' + c + ')">' + c + '</span>'; }).join('') + '</div>'
     + '<div style="font-size:12px;color:var(--ink-3);margin-top:6px">' + (deduct ? '用于充值错误等余额纠正，补扣数量不能超过当前余额' : '直充仅增加余额；充值错误请通过平台补扣处理') + '</div></div>'
     + '<div style="margin-bottom:12px"><strong>操作原因' + (deduct ? ' <span style="color:var(--red)">必填</span>' : '') + '</strong><input id="ops-recharge-reason" class="form-input" placeholder="' + (deduct ? '请填写补扣原因，将记录到操作日志' : '选填，将记录到操作日志') + '" style="margin-top:6px"></div>'
@@ -1256,19 +1256,19 @@ function applyRecharge() {
   var amount = Number(document.getElementById('ops-amount').value);
   var deduct = opsIsDeduction();
   var reason = document.getElementById('ops-recharge-reason').value.trim();
-  if(!Number.isSafeInteger(amount) || amount <= 0) { showTagToast('请输入' + (deduct ? '补扣' : '充值') + '数量（仅允许正整数）', 'error'); return; }
+  if(!Number.isFinite(amount) || amount <= 0) { showTagToast('请输入' + (deduct ? '补扣' : '充值') + '数量（仅允许正数）', 'error'); return; }
   var cur = type === 'coin' ? opsBalance(uid, 'coin', 1250) : opsBalance(uid, 'diamond', 920);
   if(deduct && !reason) { showTagToast('平台补扣必须填写操作原因', 'error'); return; }
   var next = deduct ? cur - amount : cur + amount;
-  if(next < 0) { showTagToast('扣减后余额不能为负数（当前余额 ' + cur.toLocaleString() + ' ' + unit + '）', 'error'); return; }
-  if(!Number.isSafeInteger(next)) { showTagToast('充值数量过大，请调整数量', 'error'); return; }
+  if(next < 0) { showTagToast('扣减后余额不能为负数（当前余额 ' + cur.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '）', 'error'); return; }
+  if(!Number.isFinite(next)) { showTagToast('充值数量过大，请调整数量', 'error'); return; }
   o[type] = next;
   if(!o.transactions) o.transactions = [];
   o.transactions.unshift({id:'ADJ' + Date.now() + '-' + o.transactions.length, type:type, action:deduct ? '平台补扣' : '内部直充', amount:deduct ? -amount : amount, balance:next, reason:reason, time:fmtOpsTime(new Date())});
   var el = document.getElementById(type === 'coin' ? 'stat-coin-num' : 'stat-diamond-num');
-  if(el) el.textContent = next.toLocaleString();
+  if(el) el.textContent = next.toLocaleString(undefined, {maximumFractionDigits:20});
   closeOpsModal();
-  showTagToast('已为「' + name + '」' + (deduct ? '平台补扣 -' : '直充 +') + amount.toLocaleString() + ' ' + unit + '，余额 ' + next.toLocaleString(), 'success');
+  showTagToast('已为「' + name + '」' + (deduct ? '平台补扣 -' : '直充 +') + amount.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '，余额 ' + next.toLocaleString(undefined, {maximumFractionDigits:20}), 'success');
   refreshOpsPage();
 }
 function memberOpsHtml(uid, name) {
@@ -1401,11 +1401,11 @@ PAGES['member-detail'] = function() {
     return income.indexOf(type) !== -1 ? 'success' : 'danger';
   }
   (opsGet('10001').transactions || []).slice().reverse().forEach(function(t) {
-    var change = (t.amount > 0 ? '+' : '') + t.amount.toLocaleString();
+    var change = (t.amount > 0 ? '+' : '') + t.amount.toLocaleString(undefined, {maximumFractionDigits:20});
     var direction = t.amount > 0 ? '收入' : '支出';
     var reason = escapeOpsText(t.reason || '—');
-    if(t.type === 'coin') coinRows.unshift([t.id,t.action,'工作人员',t.amount > 0 ? '内部直充' : '—',direction,change,t.balance.toLocaleString(),'—',reason,t.time]);
-    else diamondRows.unshift([t.id,t.action,direction,change,t.balance.toLocaleString(),'—',reason,t.time]);
+    if(t.type === 'coin') coinRows.unshift([t.id,t.action,'工作人员',t.amount > 0 ? '内部直充' : '—',direction,change,t.balance.toLocaleString(undefined, {maximumFractionDigits:20}),'—',reason,t.time]);
+    else diamondRows.unshift([t.id,t.action,direction,change,t.balance.toLocaleString(undefined, {maximumFractionDigits:20}),'—',reason,t.time]);
   });
   return `
   <div class="page-title">会员详情</div>
@@ -1465,7 +1465,7 @@ PAGES['member-detail'] = function() {
 
     <div class="tab-panel" id="panel-coin">
       <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-card blue"><div class="num" id="stat-coin-num">${opsBalance('10001','coin',1250).toLocaleString()}</div><div class="label">当前金币余额</div></div>
+        <div class="stat-card blue"><div class="num" id="stat-coin-num">${opsBalance('10001','coin',1250).toLocaleString(undefined, {maximumFractionDigits:20})}</div><div class="label">当前金币余额</div></div>
         <div class="stat-card green"><div class="num">5,200</div><div class="label">累计充值</div></div>
         <div class="stat-card orange"><div class="num">4,238</div><div class="label">累计消耗</div></div>
         <div class="stat-card purple"><div class="num">520</div><div class="label">累计签到奖励</div></div>
@@ -1501,7 +1501,7 @@ PAGES['member-detail'] = function() {
 
     <div class="tab-panel" id="panel-diamond">
       <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-card blue"><div class="num" id="stat-diamond-num">${opsBalance('10001','diamond',920).toLocaleString()}</div><div class="label">当前钻石余额</div></div>
+        <div class="stat-card blue"><div class="num" id="stat-diamond-num">${opsBalance('10001','diamond',920).toLocaleString(undefined, {maximumFractionDigits:20})}</div><div class="label">当前钻石余额</div></div>
         <div class="stat-card green"><div class="num">2,120</div><div class="label">累计收益</div></div>
         <div class="stat-card orange"><div class="num">1,800</div><div class="label">累计提现扣除</div></div>
         <div class="stat-card purple"><div class="num">530</div><div class="label">今日收益</div></div>
