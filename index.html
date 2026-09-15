@@ -1180,6 +1180,15 @@ function applyUnban() {
   refreshOpsPage();
 }
 var RECHARGE_UNITS = { coin: '金币', diamond: '钻石' };
+function escapeOpsText(value) {
+  return String(value).replace(/[&<>"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
+}
+function opsIsDeduction() { return document.getElementById('ops-recharge-mode').value === 'deduct'; }
+function showDeductionModal(uid, name, type) { showRechargeModal(uid, name, type || 'coin', 'deduct'); }
+function switchDeductionType(type) {
+  var uid = document.getElementById('ops-recharge-uid').value;
+  showDeductionModal(uid, opsGet(uid).name, type);
+}
 function opsRechargeCurrent() {
   var uid = document.getElementById('ops-recharge-uid').value;
   var type = document.getElementById('ops-recharge-type').value;
@@ -1193,45 +1202,48 @@ function setOpsAmount(v) {
 function updateRechargePreview() {
   var box = document.getElementById('ops-recharge-preview');
   if(!box) return;
-  var amount = parseInt(document.getElementById('ops-amount').value, 10);
+  var amount = Number(document.getElementById('ops-amount').value);
+  var deduct = opsIsDeduction();
   var cur = opsRechargeCurrent();
   var unit = RECHARGE_UNITS[document.getElementById('ops-recharge-type').value];
-  if(isNaN(amount) || amount === 0) {
+  if(!Number.isSafeInteger(amount) || amount <= 0) {
     box.style.color = 'var(--ink-2)';
-    box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b>，请输入充值/扣减数值';
+    box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b>，请输入' + (deduct ? '补扣' : '充值') + '数量（正整数）';
     return;
   }
-  var next = cur + amount;
-  if(next < 0) {
+  var next = deduct ? cur - amount : cur + amount;
+  if(next < 0 || !Number.isSafeInteger(next)) {
     box.style.color = 'var(--red)';
-    box.innerHTML = '当前余额 ' + cur.toLocaleString() + ' ' + unit + ' → 扣减后余额 <b>' + next.toLocaleString() + '</b>，余额不能为负数，请调整金额';
+    box.textContent = next < 0 ? '补扣数量超过当前余额，扣后余额不能为负数' : '充值数量过大，请调整数量';
     return;
   }
   box.style.color = 'var(--ink-2)';
-  box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b> → 操作后 <b style="color:' + (amount > 0 ? 'var(--green)' : 'var(--orange)') + '">' + next.toLocaleString() + ' ' + unit + '</b>';
+  box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b> → ' + (deduct ? '补扣后' : '充值后') + ' <b style="color:' + (deduct ? 'var(--orange)' : 'var(--green)') + '">' + next.toLocaleString() + ' ' + unit + '</b>';
 }
-function showRechargeModal(uid, name, type) {
+function showRechargeModal(uid, name, type, mode) {
+  var deduct = mode === 'deduct';
   var o = opsGet(uid);
   o.name = name; o.fromPage = 'member-detail';
   window._opsLastPage = o.fromPage;
   var overlay = opsOverlay();
   var unit = RECHARGE_UNITS[type];
   var cur = type === 'coin' ? opsBalance(uid, 'coin', 1250) : opsBalance(uid, 'diamond', 920);
-  var chips = type === 'coin' ? [100, 500, 1000, -100, -500] : [50, 200, 500, -50, -200];
-  var title = type === 'coin' ? '直充金币' : '直充钻石';
+  var chips = type === 'coin' ? [100, 500, 1000] : [50, 200, 500];
+  var title = deduct ? '平台补扣' : (type === 'coin' ? '直充金币' : '直充钻石');
   var accent = type === 'coin' ? 'var(--primary)' : 'var(--purple)';
   overlay.innerHTML = '<div class="approve-modal" style="width:460px">'
     + '<div class="approve-modal-header"><span>' + title + '</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
     + '<div class="approve-modal-body">'
     + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span> <span style="margin-left:auto;font-size:12px;color:var(--ink-2)">当前余额 <b style="color:' + accent + '">' + cur.toLocaleString() + ' ' + unit + '</b></span></div>'
-    + '<div style="margin-bottom:12px"><strong>充值数量</strong><div style="display:flex;align-items:center;gap:6px;margin-top:6px"><input id="ops-amount" class="form-input" type="number" step="1" placeholder="如 500，扣减填负数如 -100" style="flex:1" oninput="updateRechargePreview()"><span style="font-size:13px;color:var(--ink-2)">' + unit + '</span></div>'
+    + (deduct ? '<div style="margin-bottom:12px"><strong>补扣币种</strong><select class="form-input" style="margin-top:6px" onchange="switchDeductionType(this.value)"><option value="coin"' + (type === 'coin' ? ' selected' : '') + '>金币</option><option value="diamond"' + (type === 'diamond' ? ' selected' : '') + '>钻石</option></select></div>' : '')
+    + '<div style="margin-bottom:12px"><strong>' + (deduct ? '补扣数量' : '充值数量') + '</strong><div style="display:flex;align-items:center;gap:6px;margin-top:6px"><input id="ops-amount" class="form-input" type="number" min="1" step="1" placeholder="请输入正整数，如 500" style="flex:1" oninput="updateRechargePreview()"><span style="font-size:13px;color:var(--ink-2)">' + unit + '</span></div>'
     + '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">' + chips.map(function(c){ return '<span style="display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;' + (c > 0 ? 'color:var(--primary)' : 'color:var(--orange)') + '" onclick="setOpsAmount(' + c + ')">' + (c > 0 ? '+' : '') + c + '</span>'; }).join('') + '</div>'
-    + '<div style="font-size:12px;color:var(--ink-3);margin-top:6px">支持负数：负数为扣减（反向充值），将直接减少该用户余额</div></div>'
-    + '<div style="margin-bottom:12px"><strong>操作原因</strong><input id="ops-recharge-reason" class="form-input" placeholder="扣减操作必填，将记录到操作日志" style="margin-top:6px"></div>'
+    + '<div style="font-size:12px;color:var(--ink-3);margin-top:6px">' + (deduct ? '用于充值错误等余额纠正，补扣数量不能超过当前余额' : '直充仅增加余额；充值错误请通过平台补扣处理') + '</div></div>'
+    + '<div style="margin-bottom:12px"><strong>操作原因' + (deduct ? ' <span style="color:var(--red)">必填</span>' : '') + '</strong><input id="ops-recharge-reason" class="form-input" placeholder="' + (deduct ? '请填写补扣原因，将记录到操作日志' : '选填，将记录到操作日志') + '" style="margin-top:6px"></div>'
     + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7" id="ops-recharge-preview"></div>'
-    + '<input type="hidden" id="ops-recharge-uid" value="' + uid + '"><input type="hidden" id="ops-recharge-type" value="' + type + '">'
+    + '<input type="hidden" id="ops-recharge-uid" value="' + uid + '"><input type="hidden" id="ops-recharge-type" value="' + type + '"><input type="hidden" id="ops-recharge-mode" value="' + (deduct ? 'deduct' : 'recharge') + '">'
     + '</div>'
-    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="applyRecharge()" style="' + (type === 'coin' ? '' : 'background:var(--purple)') + '">确认' + title + '</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
+    + '<div class="approve-modal-footer"><button class="btn ' + (deduct ? 'btn-danger' : 'btn-primary') + '" onclick="applyRecharge()" style="' + (!deduct && type === 'diamond' ? 'background:var(--purple)' : '') + '">确认' + title + (deduct ? unit : '') + '</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
   overlay.classList.add('show');
   updateRechargePreview();
 }
@@ -1241,18 +1253,23 @@ function applyRecharge() {
   var unit = RECHARGE_UNITS[type];
   var o = opsGet(uid);
   var name = o.name || '用户 ' + uid;
-  var amount = parseInt(document.getElementById('ops-amount').value, 10);
+  var amount = Number(document.getElementById('ops-amount').value);
+  var deduct = opsIsDeduction();
   var reason = document.getElementById('ops-recharge-reason').value.trim();
-  if(isNaN(amount) || amount === 0) { showTagToast('请输入充值/扣减数量（不能为 0）', 'error'); return; }
+  if(!Number.isSafeInteger(amount) || amount <= 0) { showTagToast('请输入' + (deduct ? '补扣' : '充值') + '数量（仅允许正整数）', 'error'); return; }
   var cur = type === 'coin' ? opsBalance(uid, 'coin', 1250) : opsBalance(uid, 'diamond', 920);
-  if(amount < 0 && !reason) { showTagToast('扣减操作必须填写操作原因', 'error'); return; }
-  var next = cur + amount;
+  if(deduct && !reason) { showTagToast('平台补扣必须填写操作原因', 'error'); return; }
+  var next = deduct ? cur - amount : cur + amount;
   if(next < 0) { showTagToast('扣减后余额不能为负数（当前余额 ' + cur.toLocaleString() + ' ' + unit + '）', 'error'); return; }
+  if(!Number.isSafeInteger(next)) { showTagToast('充值数量过大，请调整数量', 'error'); return; }
   o[type] = next;
+  if(!o.transactions) o.transactions = [];
+  o.transactions.unshift({id:'ADJ' + Date.now() + '-' + o.transactions.length, type:type, action:deduct ? '平台补扣' : '内部直充', amount:deduct ? -amount : amount, balance:next, reason:reason, time:fmtOpsTime(new Date())});
   var el = document.getElementById(type === 'coin' ? 'stat-coin-num' : 'stat-diamond-num');
   if(el) el.textContent = next.toLocaleString();
   closeOpsModal();
-  showTagToast(amount > 0 ? '已为「' + name + '」直充 +' + amount.toLocaleString() + ' ' + unit + '，余额 ' + next.toLocaleString() : '已为「' + name + '」扣减 ' + Math.abs(amount).toLocaleString() + ' ' + unit + '，余额 ' + next.toLocaleString() + (reason ? ' · 原因：' + reason : ''), 'success');
+  showTagToast('已为「' + name + '」' + (deduct ? '平台补扣 -' : '直充 +') + amount.toLocaleString() + ' ' + unit + '，余额 ' + next.toLocaleString(), 'success');
+  refreshOpsPage();
 }
 function memberOpsHtml(uid, name) {
   var o = opsGet(uid);
@@ -1266,6 +1283,7 @@ function memberOpsHtml(uid, name) {
   }
   s += '<button class="btn btn-primary" onclick="showRechargeModal(\'' + uid + '\',\'' + name + '\',\'coin\')">直充金币</button>';
   s += '<button class="btn btn-primary" style="background:var(--purple)" onclick="showRechargeModal(\'' + uid + '\',\'' + name + '\',\'diamond\')">直充钻石</button>';
+  s += '<button class="btn btn-danger" onclick="showDeductionModal(\'' + uid + '\',\'' + name + '\')">平台补扣</button>';
   return s;
 }
 
@@ -1379,9 +1397,16 @@ PAGES['member-detail'] = function() {
     ['WD20260729001','用户A','男','10001','13888888888','赵磊','210101199206180015','350','¥35.00','6222020200115544332','2026-07-29 08:00:00'],
   ];
   function coinTypeBadge(type) {
-    var income = ['充值','签到奖励','系统赠送'];
+    var income = ['充值','内部直充','签到奖励','系统赠送'];
     return income.indexOf(type) !== -1 ? 'success' : 'danger';
   }
+  (opsGet('10001').transactions || []).slice().reverse().forEach(function(t) {
+    var change = (t.amount > 0 ? '+' : '') + t.amount.toLocaleString();
+    var direction = t.amount > 0 ? '收入' : '支出';
+    var reason = escapeOpsText(t.reason || '—');
+    if(t.type === 'coin') coinRows.unshift([t.id,t.action,'工作人员',t.amount > 0 ? '内部直充' : '—',direction,change,t.balance.toLocaleString(),'—',reason,t.time]);
+    else diamondRows.unshift([t.id,t.action,direction,change,t.balance.toLocaleString(),'—',reason,t.time]);
+  });
   return `
   <div class="page-title">会员详情</div>
   
@@ -1447,7 +1472,7 @@ PAGES['member-detail'] = function() {
       </div>
       ${filterBar([
         {type:'select',label:'收支类型',options:['收入','支出']},
-        {type:'select',label:'交易类型',options:['充值','通话消耗','送礼','视频速配','文字聊天','守护','签到奖励','系统赠送']},
+        {type:'select',label:'交易类型',options:['充值','内部直充','平台补扣','通话消耗','送礼','视频速配','文字聊天','守护','签到奖励','系统赠送']},
         {type:'select',label:'充值渠道',options:['App充值','官网充值','工作人员']},
         {type:'select',label:'支付方式',options:['支付宝','微信渠道','内部直充']},
         {type:'date-range',label:'时间'},
@@ -1483,7 +1508,7 @@ PAGES['member-detail'] = function() {
       </div>
       ${filterBar([
         {type:'select',label:'收支类型',options:['收入','支出']},
-        {type:'select',label:'交易类型',options:['通话收益','礼物收益','文字聊天','守护收益','提现扣除','充值奖励','提现奖励','系统赠送']},
+        {type:'select',label:'交易类型',options:['内部直充','平台补扣','通话收益','礼物收益','文字聊天','守护收益','提现扣除','充值奖励','提现奖励','系统赠送']},
         {type:'date-range',label:'时间'},
       ])}
       <div class="table-wrapper">
@@ -1492,7 +1517,7 @@ PAGES['member-detail'] = function() {
           <tbody>
             ${diamondRows.map(r => `<tr>
               <td style="font-family:monospace;font-size:12px">${r[0]}</td>
-              <td>${badge(r[1], r[1]==='提现扣除'?'danger':r[1]==='充值奖励'?'info':r[1]==='提现奖励'?'purple':r[1]==='守护收益'?'primary':'success')}</td>
+              <td>${badge(r[1], r[2]==='支出'?'danger':r[1]==='充值奖励'?'info':r[1]==='提现奖励'?'purple':r[1]==='守护收益'?'primary':'success')}</td>
               <td>${r[2]==='收入' ? '<span style="color:var(--green)">收入</span>' : '<span style="color:var(--red)">支出</span>'}</td>
               <td style="font-weight:600;color:${r[2]==='收入'?'var(--green)':'var(--red)'}">${r[3]}</td>
               <td>${r[4]}</td>
@@ -5703,6 +5728,15 @@ PAGES['sys-log'] = function() {
     ['L004','admin','管理员','删除用户 U003','2026-08-10 11:15:08','成功','192.168.1.100'],
     ['L005','unknown','—','登录系统（密码错误）','2026-08-09 22:40:55','失败','203.0.113.5']
   ];
+  var balanceLogs = [];
+  Object.keys(window._memberOps).forEach(function(uid) {
+    var o = window._memberOps[uid];
+    (o.transactions || []).forEach(function(t) {
+      balanceLogs.push([t.id,'admin','管理员',escapeOpsText(t.action + ' · ' + (o.name || '用户') + '（' + uid + '） · ' + RECHARGE_UNITS[t.type] + ' ' + (t.amount > 0 ? '+' : '') + t.amount + ' · 余额 ' + t.balance + ' · 原因：' + (t.reason || '—')),t.time,'成功','—']);
+    });
+  });
+  balanceLogs.sort(function(a,b) { return b[4].localeCompare(a[4]) || b[0].localeCompare(a[0]); });
+  rows = balanceLogs.concat(rows);
   return `
   <div class="page-title">日志管理</div>
   <div class="page-desc">查看系统操作日志与登录日志</div>
