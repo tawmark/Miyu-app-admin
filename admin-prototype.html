@@ -1385,16 +1385,13 @@ PAGES['member-detail'] = function() {
     ['DM20260803002','通话收益','收入','+150','1,600','用户F (ID:10006)','与用户F通话 15分钟','2026-08-03 16:45:20'],
     ['DM20260803001','系统赠送','收入','+200','1,450','—','新用户注册赠送','2026-08-03 14:23:05'],
   ];
-  // [提现单号, 昵称, 性别, 用户ID, 手机号, 姓名, 身份证号, 提现钻石, 到账金额, 银行卡号, 申请时间]
+  // 会员提现记录：银行卡由第三方平台认证，本系统按商户订单号同步状态
   var withdrawRows = [
-    ['WD20260811001','用户A','男','10001','13888888888','赵磊','210101199206180015','1,250','¥125.00','6222020200115544332','2026-08-11 14:30:00'],
-    ['WD20260810001','用户A','男','10001','13888888888','赵磊','210101199206180015','600','¥60.00','6222020200115544332','2026-08-10 12:00:00'],
-    ['WD20260809002','用户A','男','10001','13888888888','赵磊','210101199206180015','1,000','¥100.00','6225880100123456','2026-08-09 11:20:15'],
-    ['WD20260808001','用户A','男','10001','13888888888','赵磊','210101199206180015','800','¥80.00','6217003810012345678','2026-08-08 16:45:00'],
-    ['WD20260804001','用户A','男','10001','13888888888','赵磊','210101199206180015','800','¥80.00','6222020200115544332','2026-08-04 10:05:28'],
-    ['WD20260802001','用户A','男','10001','13888888888','赵磊','210101199206180015','600','¥60.00','6228480402564890018','2026-08-02 14:50:00'],
-    ['WD20260730001','用户A','男','10001','13888888888','赵磊','210101199206180015','500','¥50.00','6225880100123456','2026-07-30 09:15:00'],
-    ['WD20260729001','用户A','男','10001','13888888888','赵磊','210101199206180015','350','¥35.00','6222020200115544332','2026-07-29 08:00:00'],
+    {no:'WD20260811001',diamonds:'1,250',amount:'¥125.00',status:'提现中',applyTime:'2026-08-11 14:30:00',payoutTime:'—'},
+    {no:'WD20260810001',diamonds:'600',amount:'¥60.00',status:'提现失败',applyTime:'2026-08-10 12:00:00',payoutTime:'2026-08-11 09:32:10',reason:'第三方实名认证信息不一致'},
+    {no:'WD20260809002',diamonds:'1,000',amount:'¥100.00',status:'已提现',applyTime:'2026-08-09 11:20:15',payoutTime:'2026-08-10 10:08:25'},
+    {no:'WD20260808001',diamonds:'800',amount:'¥80.00',status:'已提现',applyTime:'2026-08-08 16:45:00',payoutTime:'2026-08-09 11:05:33'},
+    {no:'WD20260804001',diamonds:'800',amount:'¥80.00',status:'已提现',applyTime:'2026-08-04 10:05:28',payoutTime:'2026-08-05 09:18:46'},
   ];
   function coinTypeBadge(type) {
     var income = ['充值','内部直充','签到奖励','系统赠送'];
@@ -1533,9 +1530,9 @@ PAGES['member-detail'] = function() {
 
     <div class="tab-panel" id="panel-withdraw">
       <div class="info-grid" style="margin-bottom:20px">
-        <div class="info-item"><span class="label">持卡人</span><span class="value">赵磊</span></div>
-        <div class="info-item"><span class="label">银行卡号</span><span class="value" style="font-family:monospace">6222 0202 0011 5544 332</span></div>
-        <div class="info-item"><span class="label">绑定时间</span><span class="value">2026-07-12 09:15:33</span></div>
+        <div class="info-item"><span class="label">收款认证</span><span class="value">由第三方平台完成</span></div>
+        <div class="info-item"><span class="label">APP绑卡要求</span><span class="value">无需绑定银行卡</span></div>
+        <div class="info-item"><span class="label">状态同步</span><span class="value">按商户订单号同步</span></div>
       </div>
       <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
         <div class="stat-card blue"><div class="num">¥370</div><div class="label">今日提现</div></div>
@@ -1543,19 +1540,18 @@ PAGES['member-detail'] = function() {
         <div class="stat-card purple"><div class="num">¥5,490</div><div class="label">累计提现</div></div>
       </div>
       ${filterBar([
+        {type:'select',label:'提现状态',options:['提现中','已提现','提现失败']},
         {type:'date-range',label:'申请时间'},
       ])}
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>提现单号</th><th>提现钻石</th><th>到账金额</th><th>银行卡号</th><th>申请时间</th><th>操作</th></tr></thead>
+          <thead><tr><th>商户订单号</th><th>提现钻石</th><th>打款金额</th><th>状态</th><th>申请时间</th><th>第三方打款时间</th></tr></thead>
           <tbody>
             ${withdrawRows.map(r => `<tr>
-              <td style="font-family:monospace;font-size:12px">${r[0]}</td>
-              <td>${r[7]}</td>
-              <td style="font-weight:600">${r[8]}</td>
-              <td style="font-family:monospace;font-size:12px">${r[9]}</td>
-              <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r[10]}</td>
-              <td><button class="btn-action btn-action-view" onclick="showWithdrawDetail('${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}','${r[9]}','${r[10]}')">详情</button></td>
+              <td style="font-family:monospace;font-size:12px">${r.no}</td><td>${r.diamonds}</td><td style="font-weight:600">${r.amount}</td>
+              <td>${badge(r.status,r.status==='已提现'?'success':r.status==='提现失败'?'danger':'warning')}${r.reason?'<div style="font-size:11px;color:var(--red);margin-top:3px">'+r.reason+'</div>':''}</td>
+              <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r.applyTime}</td>
+              <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r.payoutTime}</td>
             </tr>`).join('')}
           </tbody>
         </table>
@@ -2878,19 +2874,51 @@ function closeRechargeDetail() {
 }
 
 // --- Order Withdraw (提现记录) ---
-PAGES['order-withdraw'] = function() {
-  // [提现单号, 申请人昵称, 性别, 用户ID, 手机号, 姓名, 身份证号, 提现钻石, 到账金额, 银行卡号, 申请时间]
-  var wdRows = [
-    ['WD20260813001','用户B','女','U002','139****8002','李雪','410101199203150028','1,250','¥125.00','6222020200112233445','2026-08-13 14:30:00'],
-    ['WD20260813002','用户D','女','U004','136****8004','王倩','310101199501010027','1,200','¥120.00','6225880123456789','2026-08-13 09:15:00'],
-    ['WD20260811003','用户G','男','U007','133****8007','张伟','440101199007120016','800','¥80.00','6217003810012345678','2026-08-11 15:30:00'],
-    ['WD20260811002','用户E','男','U005','135****8005','刘洋','110101199511220034','1,000','¥100.00','6222020200119988776','2026-08-11 11:20:00'],
-    ['WD20260809001','用户F','女','U006','134****8006','陈静','330101199801050023','800','¥80.00','6217003810018765432','2026-08-09 16:45:00'],
-    ['WD20260808001','用户A','男','U001','138****8001','赵磊','210101199206180015','800','¥80.00','6222020200115544332','2026-08-08 10:05:00'],
-    ['WD20260805002','用户H','男','U008','132****8008','孙强','500101199709300019','600','¥60.00','6228480402564890018','2026-08-05 14:50:00'],
-    ['WD20260804001','用户C','男','U003','137****8003','周明','610101199404250012','500','¥50.00','6225880198765432109','2026-08-04 09:15:00'],
+function withdrawSeedRows() {
+  return [
+    {merchantOrderNo:'WD20260813001',userName:'用户B',gender:'女',userId:'U002',userPhone:'139****8002',realName:'李雪',idCard:'410101199203150028',diamonds:'1,250',amount:125,status:'提现中',applyTime:'2026-08-13 14:30:00',remark:'APP提现申请'},
+    {merchantOrderNo:'WD20260813002',userName:'用户D',gender:'女',userId:'U004',userPhone:'136****8004',realName:'王倩',idCard:'310101199501010027',diamonds:'1,200',amount:120,status:'提现中',applyTime:'2026-08-13 09:15:00',remark:'APP提现申请'},
+    {merchantOrderNo:'WD20260811003',userName:'用户G',gender:'男',userId:'U007',userPhone:'133****8007',realName:'张伟',idCard:'440101199007120016',diamonds:'800',amount:80,status:'已提现',applyTime:'2026-08-11 15:30:00',payoutTime:'2026-08-12 10:25:18',thirdBatchId:'FP20260812001',thirdDetailId:'FPI003',fee:2.4,tax:0,bankCard:'6217********5678',thirdPhone:'133****8007',remark:'APP提现申请'},
+    {merchantOrderNo:'WD20260811002',userName:'用户E',gender:'男',userId:'U005',userPhone:'135****8005',realName:'刘洋',idCard:'110101199511220034',diamonds:'1,000',amount:100,status:'提现失败',applyTime:'2026-08-11 11:20:00',payoutTime:'2026-08-12 10:20:08',failureReason:'第三方实名认证信息不一致',thirdBatchId:'FP20260812001',thirdDetailId:'FPI002',fee:0,tax:0,remark:'APP提现申请'},
+    {merchantOrderNo:'WD20260809001',userName:'用户F',gender:'女',userId:'U006',userPhone:'134****8006',realName:'陈静',idCard:'330101199801050023',diamonds:'800',amount:80,status:'已提现',applyTime:'2026-08-09 16:45:00',payoutTime:'2026-08-10 09:18:22',thirdBatchId:'FP20260810001',thirdDetailId:'FPI001',fee:2.4,tax:0,bankCard:'6217********5432',thirdPhone:'134****8006',remark:'APP提现申请'},
+    {merchantOrderNo:'WD20260808001',userName:'用户A',gender:'男',userId:'U001',userPhone:'138****8001',realName:'赵磊',idCard:'210101199206180015',diamonds:'800',amount:80,status:'已提现',applyTime:'2026-08-08 10:05:00',payoutTime:'2026-08-09 11:05:33',thirdBatchId:'FP20260809001',thirdDetailId:'FPI001',fee:2.4,tax:0,bankCard:'6222********4332',thirdPhone:'138****8001',remark:'APP提现申请'},
+    {merchantOrderNo:'WD20260805002',userName:'用户H',gender:'男',userId:'U008',userPhone:'132****8008',realName:'孙强',idCard:'500101199709300019',diamonds:'600',amount:60,status:'提现失败',applyTime:'2026-08-05 14:50:00',payoutTime:'2026-08-06 09:12:44',failureReason:'第三方账户未完成认证',thirdBatchId:'FP20260806001',thirdDetailId:'FPI004',fee:0,tax:0,remark:'APP提现申请'},
+    {merchantOrderNo:'WD20260804001',userName:'用户C',gender:'男',userId:'U003',userPhone:'137****8003',realName:'周明',idCard:'610101199404250012',diamonds:'500',amount:50,status:'已提现',applyTime:'2026-08-04 09:15:00',payoutTime:'2026-08-05 10:06:16',thirdBatchId:'FP20260805001',thirdDetailId:'FPI002',fee:1.5,tax:0,bankCard:'6225********2109',thirdPhone:'137****8003',remark:'APP提现申请'}
   ];
-  window._wdRows = wdRows;
+}
+function mapWithdrawPayoutStatus(status) {
+  if(status === '打款完成') return '已提现';
+  if(status === '交易失败') return '提现失败';
+  return '提现中';
+}
+function applyWithdrawImportRows(importRows) {
+  var result = {success:0,failed:0,unmatched:0,total:importRows.length};
+  importRows.forEach(function(item) {
+    var row = (window._wdRows || []).find(function(r){ return r.merchantOrderNo === item.merchantOrderNo; });
+    if(!row) { result.unmatched++; return; }
+    var status = mapWithdrawPayoutStatus(item.payoutStatus);
+    row.status = status;
+    row.failureReason = status === '提现失败' ? (item.payoutLog || '第三方未返回失败原因') : '';
+    row.tax = item.tax || 0; row.fee = item.fee || 0; row.payoutTime = item.payoutTime || '';
+    row.thirdBatchId = item.batchId || ''; row.thirdDetailId = item.detailId || '';
+    row.bankCard = item.bankCard ? String(item.bankCard).replace(/^(\d{4}).*(\d{4})$/, '$1********$2') : '';
+    row.thirdPhone = item.thirdPhone ? String(item.thirdPhone).replace(/^(\d{3}).*(\d{4})$/, '$1****$2') : '';
+    if(status === '已提现') result.success++; else if(status === '提现失败') result.failed++;
+  });
+  return result;
+}
+function buildWithdrawExportRows(rows) {
+  var note = '1、打款金额必须保留两位小数，否则打款可能会出现失败！\n2、打款数据以身份证号为准，平台会通过身份证号关联出实名认证的银行卡四要素！\n3、单条打款金额不要大于等于4.9万，超过的请拆分成多条\n本行勿删！！！';
+  var headers = ['收款户名(真实姓名，必填)','身份证号(必填)','打款金额(元，必填)','商户订单号(非必填)','打款备注(非必填)'];
+  var data = (rows || []).filter(function(r){ return r.status === '提现中'; }).map(function(r){
+    return [r.realName,r.idCard,Number(r.amount).toFixed(2),r.merchantOrderNo,r.remark || 'APP提现申请'];
+  });
+  return [[note,'','','',''],headers].concat(data);
+}
+PAGES['order-withdraw'] = function() {
+  // 提现申请与第三方打款结果，以商户订单号作为唯一匹配键
+  if(!window._wdRows) window._wdRows = withdrawSeedRows();
+  var wdRows = window._wdRows;
   window._wdFiltered = wdRows;
   // 从概览"今日提现"卡片进入时，自动按当天筛选
   var today = '2026-08-13';
@@ -2900,33 +2928,33 @@ PAGES['order-withdraw'] = function() {
     window._pendingFilter = null;
     initStart = today;
     initEnd = today;
-    initRows = wdRows.filter(function(r){ return String(r[10]).indexOf(today) === 0; });
+    initRows = wdRows.filter(function(r){ return String(r.applyTime).indexOf(today) === 0; });
   }
   return `
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
     <div>
       <div class="page-title">提现记录</div>
-      <div class="page-desc">查看用户提现记录，支持导出Excel进行线下打款</div>
+      <div class="page-desc">APP提交提现申请后导出至第三方平台放款，再按商户订单号导入结果并同步APP状态</div>
     </div>
   </div>
   <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
-    <div class="stat-card blue"><div class="num">2</div><div class="label">今日提现</div></div>
-    <div class="stat-card green"><div class="num">12</div><div class="label">本月提现</div></div>
-    <div class="stat-card purple"><div class="num">156</div><div class="label">累计提现</div></div>
+    <div class="stat-card blue"><div class="num">${wdRows.filter(r=>r.status==='提现中').length}</div><div class="label">提现中</div></div>
+    <div class="stat-card green"><div class="num">${wdRows.filter(r=>r.status==='已提现').length}</div><div class="label">已提现</div></div>
+    <div class="stat-card orange"><div class="num">${wdRows.filter(r=>r.status==='提现失败').length}</div><div class="label">提现失败</div></div>
   </div>
   <div class="filter-bar">
-    <input id="wd-no" placeholder="提现单号">
+    <input id="wd-no" placeholder="商户订单号">
     <input id="wd-user" placeholder="申请人昵称/ID/手机号">
-    <input id="wd-name" placeholder="姓名">
-    <input id="wd-idcard" placeholder="身份证号">
+    <select id="wd-status"><option value="">全部状态</option><option>提现中</option><option>已提现</option><option>提现失败</option></select>
     <input type="date" id="wd-start" value="${initStart}"> <span style="color:var(--ink-3)">~</span> <input type="date" id="wd-end" value="${initEnd}">
     <button class="btn btn-primary btn-sm" onclick="applyWithdrawFilter()">搜索</button>
     <button class="btn btn-default btn-sm" onclick="resetWithdrawFilter()">重置</button>
-    <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="exportWithdrawExcel()">导出Excel</button>
+    <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="exportWithdrawExcel()">导出费用发放模板</button>
+    <button class="btn btn-primary btn-sm" style="background:var(--purple)" onclick="showWithdrawImportModal()">导入打款明细</button>
   </div>
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>提现单号</th><th>申请人</th><th>姓名</th><th>身份证号</th><th>提现钻石</th><th>到账金额</th><th>银行卡号</th><th>申请时间</th><th>操作</th></tr></thead>
+      <thead><tr><th>商户订单号</th><th>申请人</th><th>提现钻石</th><th>打款金额</th><th>状态</th><th>申请时间</th><th>第三方打款时间</th><th>操作</th></tr></thead>
       <tbody id="wd-tbody">
         ${initRows.map(wdRowHtml).join('')}
       </tbody>
@@ -2936,49 +2964,41 @@ PAGES['order-withdraw'] = function() {
 };
 function wdRowHtml(r) {
   return `<tr>
-    <td style="font-family:monospace;font-size:12px">${r[0]}</td>
-    <td>${userTag(r[1],r[2],r[3],r[4])}</td>
-    <td style="font-weight:600">${r[5]}</td>
-    <td style="font-family:monospace;font-size:12px">${r[6]}</td>
-    <td>${r[7]}</td>
-    <td style="font-weight:600">${r[8]}</td>
-    <td style="font-family:monospace;font-size:12px">${r[9]}</td>
-    <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r[10]}</td>
-    <td><button class="btn-action btn-action-view" onclick="showWithdrawDetail('${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}','${r[9]}','${r[10]}')">详情</button></td>
+    <td style="font-family:monospace;font-size:12px">${r.merchantOrderNo}</td>
+    <td>${userTag(r.userName,r.gender,r.userId,r.userPhone)}</td>
+    <td>${r.diamonds}</td><td style="font-weight:600">¥${Number(r.amount).toFixed(2)}</td>
+    <td>${badge(r.status,r.status==='已提现'?'success':r.status==='提现失败'?'danger':'warning')}</td>
+    <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r.applyTime}</td>
+    <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r.payoutTime || '—'}</td>
+    <td><button class="btn-action btn-action-view" onclick="showWithdrawDetail('${r.merchantOrderNo}')">详情</button></td>
   </tr>`;
 }
 function applyWithdrawFilter() {
   var no = document.getElementById('wd-no');
   var user = document.getElementById('wd-user');
-  var nameEl = document.getElementById('wd-name');
-  var idcardEl = document.getElementById('wd-idcard');
-  var channel = document.getElementById('wd-channel');
+  var statusEl = document.getElementById('wd-status');
   var start = document.getElementById('wd-start');
   var end = document.getElementById('wd-end');
   var kwNo = no ? no.value.trim() : '';
   var kwUser = user ? user.value.trim() : '';
-  var kwName = nameEl ? nameEl.value.trim() : '';
-  var kwIdCard = idcardEl ? idcardEl.value.trim() : '';
-  var kwCh = channel ? channel.value : '';
+  var status = statusEl ? statusEl.value : '';
   var s = start ? start.value : '';
   var e = end ? end.value : '';
   var rows = (window._wdRows || []).filter(function(r) {
-    if (kwNo && String(r[0]).indexOf(kwNo) === -1) return false;
-    if (kwUser && String(r[1] + r[3] + r[4] + r[5]).indexOf(kwUser) === -1) return false;
-    if (kwName && String(r[5]).indexOf(kwName) === -1) return false;
-    if (kwIdCard && String(r[6]).indexOf(kwIdCard) === -1) return false;
-    if (kwCh && r[11] !== kwCh) return false;
-    var d = String(r[12]).slice(0, 10);
+    if (kwNo && r.merchantOrderNo.indexOf(kwNo) === -1) return false;
+    if (kwUser && String(r.userName + r.userId + r.userPhone).indexOf(kwUser) === -1) return false;
+    if (status && r.status !== status) return false;
+    var d = String(r.applyTime).slice(0, 10);
     if (s && d < s) return false;
     if (e && d > e) return false;
     return true;
   });
   window._wdFiltered = rows;
   var tb = document.getElementById('wd-tbody');
-  if (tb) tb.innerHTML = rows.map(wdRowHtml).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--ink-3);padding:20px">未找到符合条件的提现记录</td></tr>';
+  if (tb) tb.innerHTML = rows.map(wdRowHtml).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--ink-3);padding:20px">未找到符合条件的提现记录</td></tr>';
 }
 function resetWithdrawFilter() {
-  ['wd-no','wd-user','wd-name','wd-idcard','wd-channel','wd-start','wd-end'].forEach(function(id) {
+  ['wd-no','wd-user','wd-status','wd-start','wd-end'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -2986,7 +3006,9 @@ function resetWithdrawFilter() {
   var tb = document.getElementById('wd-tbody');
   if (tb) tb.innerHTML = (window._wdRows || []).map(wdRowHtml).join('');
 }
-function showWithdrawDetail(orderId, userName, gender, userId, userPhone, realName, idCard, diamonds, amount, bankCard, applyTime) {
+function showWithdrawDetail(orderId) {
+  var r = (window._wdRows || []).find(function(item){ return item.merchantOrderNo === orderId; });
+  if(!r) return;
   var overlay = document.getElementById('withdraw-detail-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -2998,23 +3020,27 @@ function showWithdrawDetail(orderId, userName, gender, userId, userPhone, realNa
     + '<div class="approve-modal-header"><span>提现详情</span><button class="reject-modal-close" onclick="closeWithdrawDetail()">&times;</button></div>'
     + '<div class="approve-modal-body">'
     + '<table style="width:100%;font-size:13px;border-collapse:collapse">'
-    + '<tr><td style="color:var(--ink-3);width:120px;padding:6px 0">提现单号</td><td style="font-family:monospace;padding:6px 0">' + orderId + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">申请人</td><td style="padding:6px 0">' + userName + '(' + gender + ') <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + userId + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + userPhone + '</span></td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">姓名</td><td style="padding:6px 0">' + realName + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">身份证号</td><td style="font-family:monospace;padding:6px 0">' + idCard + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">提现钻石</td><td style="padding:6px 0">' + diamonds + ' 钻石</td></tr>'
+    + '<tr><td style="color:var(--ink-3);width:120px;padding:6px 0">商户订单号</td><td style="font-family:monospace;padding:6px 0">' + r.merchantOrderNo + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">申请人</td><td style="padding:6px 0">' + r.userName + '(' + r.gender + ') · ' + r.userId + ' · ' + r.userPhone + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">提现状态</td><td>' + badge(r.status,r.status==='已提现'?'success':r.status==='提现失败'?'danger':'warning') + ' <span style="font-size:12px;color:var(--ink-3)">已同步APP</span></td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">提现钻石</td><td style="padding:6px 0">' + r.diamonds + ' 钻石</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">钻石兑换比例</td><td style="padding:6px 0">10% <span style="font-size:12px;color:var(--ink-3)">（按提现设置）</span></td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">到账金额</td><td style="font-weight:600;padding:6px 0">' + amount + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">银行卡号</td><td style="font-family:monospace;padding:6px 0">' + bankCard + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">申请时间</td><td style="font-family:monospace;padding:6px 0">' + applyTime + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">打款金额</td><td style="font-weight:600;padding:6px 0">¥' + Number(r.amount).toFixed(2) + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">申请时间</td><td style="font-family:monospace;padding:6px 0">' + r.applyTime + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">第三方打款时间</td><td>' + (r.payoutTime || '—') + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">个税 / 手续费</td><td>' + (r.tax || 0) + ' / ' + (r.fee || 0) + ' 元</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">批次ID / 明细ID</td><td style="font-family:monospace">' + (r.thirdBatchId || '—') + ' / ' + (r.thirdDetailId || '—') + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">第三方收款信息</td><td>' + (r.bankCard || '由第三方平台认证') + (r.thirdPhone ? ' · ' + r.thirdPhone : '') + '</td></tr>'
+    + (r.failureReason ? '<tr><td style="color:var(--ink-3);padding:6px 0">失败原因</td><td style="color:var(--red)">' + r.failureReason + '</td></tr>' : '')
     + '</table>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-default" onclick="closeWithdrawDetail()">关闭</button></div></div>';
   overlay.classList.add('show');
 }
 function exportToExcel(filename, headers, rows) {
-  var csv = '\ufeff' + headers.join(',') + '\n' + rows.map(function(r){
-    return r.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
+  var quoteExcelCell = function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; };
+  var csv = '\ufeff' + headers.map(quoteExcelCell).join(',') + '\n' + rows.map(function(r){
+    return r.map(quoteExcelCell).join(',');
   }).join('\n');
   var blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8' });
   var a = document.createElement('a');
@@ -3026,12 +3052,40 @@ function exportToExcel(filename, headers, rows) {
   setTimeout(function(){ URL.revokeObjectURL(a.href); }, 200);
 }
 function exportWithdrawExcel() {
-  var headers = ['提现单号','申请人昵称','性别','用户ID','手机号','姓名','身份证号','提现钻石','到账金额','银行卡号','申请时间'];
-  var rows = (window._wdFiltered || window._wdRows || []).map(function(r){
-    return [r[0],r[1],r[2],r[3],r[4],r[5],'="' + r[6] + '"',r[7],r[8],'="' + r[9] + '"',r[10]];
-  });
-  exportToExcel('提现记录', headers, rows);
+  var rows = buildWithdrawExportRows(window._wdFiltered || window._wdRows || []);
+  if(rows.length === 2) { showTagToast('当前筛选结果中没有“提现中”记录', 'error'); return; }
+  exportToExcel('费用发放模版-' + new Date().getTime(), rows[0], rows.slice(1));
 }
+function withdrawImportDemoRows() {
+  return [
+    {merchantOrderNo:'WD20260813001',payoutStatus:'打款完成',payoutLog:'',tax:0,fee:3.75,payoutTime:'2026-08-14 10:00:00',batchId:'FP20260814001',detailId:'FPI001',bankCard:'6222020200112233445',thirdPhone:'13900008002'},
+    {merchantOrderNo:'WD20260813002',payoutStatus:'交易失败',payoutLog:'第三方实名认证信息不一致',tax:0,fee:0,payoutTime:'2026-08-14 10:01:00',batchId:'FP20260814001',detailId:'FPI002',bankCard:'',thirdPhone:''},
+    {merchantOrderNo:'WD-NOT-FOUND',payoutStatus:'打款完成',payoutLog:'',tax:0,fee:1.5,payoutTime:'2026-08-14 10:02:00',batchId:'FP20260814001',detailId:'FPI003',bankCard:'',thirdPhone:''}
+  ];
+}
+function showWithdrawImportModal() {
+  var overlay = document.getElementById('withdraw-import-overlay');
+  if(!overlay){ overlay=document.createElement('div'); overlay.id='withdraw-import-overlay'; overlay.className='approve-overlay'; document.body.appendChild(overlay); }
+  window._wdImportRows = [];
+  overlay.innerHTML='<div class="approve-modal" style="width:640px"><div class="approve-modal-header"><span>导入第三方打款明细</span><button class="reject-modal-close" onclick="closeWithdrawImport()">&times;</button></div><div class="approve-modal-body">'
+    + '<div style="background:var(--primary-light);padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.7;margin-bottom:12px">按“商户订单号”匹配提现记录。第三方“打款完成”更新为“已提现”，“交易失败”更新为“提现失败”，并同步APP。</div>'
+    + '<input type="file" class="form-input" accept=".xlsx,.xls,.csv" onchange="stageWithdrawImportFile(this)"><div id="wd-import-preview" style="margin-top:12px;color:var(--ink-2);font-size:13px">请选择第三方导出的“打款明细列表”。</div></div>'
+    + '<div class="approve-modal-footer"><button class="btn btn-default" onclick="stageWithdrawImportFile(null)">加载示例数据</button><button class="btn btn-primary" onclick="confirmWithdrawImport()">确认导入</button><button class="btn btn-default" onclick="closeWithdrawImport()">取消</button></div></div>';
+  overlay.classList.add('show');
+}
+function stageWithdrawImportFile(input) {
+  window._wdImportRows = withdrawImportDemoRows();
+  var el=document.getElementById('wd-import-preview'); if(!el) return;
+  var name=input&&input.files&&input.files[0]?input.files[0].name:'打款明细列表示例.xlsx';
+  el.innerHTML='<b>'+name+'</b><div style="margin-top:8px">识别 3 条：预计已提现 1 条、提现失败 1 条、未匹配 1 条。</div><div style="margin-top:6px;color:var(--orange)">未匹配记录不会修改后台数据。</div>';
+}
+function confirmWithdrawImport() {
+  if(!window._wdImportRows || !window._wdImportRows.length){ showTagToast('请先选择或加载打款明细', 'error'); return; }
+  var r=applyWithdrawImportRows(window._wdImportRows); closeWithdrawImport();
+  showTagToast('导入完成：已提现 '+r.success+' 条，提现失败 '+r.failed+' 条，未匹配 '+r.unmatched+' 条；状态已同步APP','success');
+  navigate('order-withdraw','提现记录');
+}
+function closeWithdrawImport(){ var o=document.getElementById('withdraw-import-overlay'); if(o)o.classList.remove('show'); }
 function closeWithdrawDetail() {
   var overlay = document.getElementById('withdraw-detail-overlay');
   if (overlay) overlay.classList.remove('show');
@@ -3050,18 +3104,20 @@ PAGES['withdraw-setting'] = function() {
       <div class="config-row"><span class="config-label">钻石兑换比例</span><input class="form-input" style="max-width:110px" value="10"> <span style="font-size:12px;color:var(--ink-3)">%（提现钻石 × 此比例 = 到账金额，小数位向下取整；如提现 1,250 钻石，按 10% 到账 125 元）</span></div>
       <div class="config-row"><span class="config-label">提现扣除钻石规则</span><span style="font-size:13px;color:var(--ink-2)">提现扣除钻石须为</span><input class="form-input" id="withdraw-multiple-input" style="max-width:90px;text-align:center" value="10"><span style="font-size:13px;color:var(--ink-2)">的倍数</span><span style="font-size:12px;color:var(--ink-3)">（自定义数值，填 1 表示不限倍数）</span></div>
       <div class="config-row" style="align-items:flex-start"><span class="config-label">温馨提示</span><div style="flex:1;max-width:520px">
-        <textarea class="form-textarea" id="withdraw-tip-input" style="width:100%;max-width:520px;min-height:72px" oninput="document.getElementById('withdraw-tip-preview').textContent=this.value">提现申请将于 1-3 个工作日内处理，节假日顺延；请确保收款信息填写准确，如有疑问请联系在线客服。</textarea>
+        <textarea class="form-textarea" id="withdraw-tip-input" style="width:100%;max-width:520px;min-height:72px" oninput="document.getElementById('withdraw-tip-preview').textContent=this.value">提交提现申请后状态为“提现中”。银行卡及收款认证请前往第三方平台完成；放款结果返回后，APP将更新为“已提现”或“提现失败”。</textarea>
         <div style="font-size:12px;color:var(--ink-3);margin-top:6px">该提示将展示在前台「我的 → 钱包 → 提现」页面，用于向用户说明提现处理时效</div>
         <div style="font-size:12px;color:var(--ink-3);margin:14px 0 6px">前台展示效果：</div>
-        <div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink-2);line-height:1.7"><span style="color:var(--primary);font-weight:600">温馨提示：</span><span id="withdraw-tip-preview">提现申请将于 1-3 个工作日内处理，节假日顺延；请确保收款信息填写准确，如有疑问请联系在线客服。</span></div>
+        <div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink-2);line-height:1.7"><span style="color:var(--primary);font-weight:600">温馨提示：</span><span id="withdraw-tip-preview">提交提现申请后状态为“提现中”。银行卡及收款认证请前往第三方平台完成；放款结果返回后，APP将更新为“已提现”或“提现失败”。</span></div>
       </div></div>
     </div>
   </div>
   <div class="card">
-    <div class="card-title">线下打款说明</div>
+    <div class="card-title">第三方平台放款流程</div>
     <div style="background:var(--primary-light);border-radius:8px;padding:12px;font-size:13px;color:var(--ink-2);line-height:1.8">
-      当前提现模式为线下手动处理，无需对接银行接口。管理员可在「提现记录」页面导出Excel表格，按批次线下打款后手动更新提现状态。<br>
-      <span style="color:var(--orange)">注意：提现记录状态变更需在提现记录页面操作，不支持自动回调。</span>
+      1. APP提交提现申请，后台生成唯一商户订单号，状态为“提现中”。<br>
+      2. 管理员导出“费用发放模板”，上传至第三方平台完成认证及放款。<br>
+      3. 从第三方平台导出“打款明细列表”，导入后台并按商户订单号匹配。<br>
+      <span style="color:var(--orange)">导入后，“打款完成”更新为“已提现”，“交易失败”更新为“提现失败”，并同步到APP。</span>
     </div>
   </div>
   <div style="margin-top:16px"><button class="btn btn-primary">保存设置</button></div>`;
@@ -4053,7 +4109,7 @@ function clearRateSetting(uid) {
 
 // --- Service FAQ ---
 PAGES['service-faq'] = function() {
-  var rows = [['F001','如何充值金币？','<p>进入<b>个人中心</b> → 点击「<span style="color:#1677ff">充值中心</span>」→ 选择充值档位并完成支付，金币将<u>实时到账</u>。</p><ul><li>支持微信 / 支付宝支付</li><li>到账后可前往钱包查看余额</li></ul>','账户充值','已上架','2026-08-01 10:30'],['F002','如何提现？','<p>进入<b>钱包</b> → 「<span style="color:#1677ff">提现</span>」→ 绑定银行卡后填写提现钻石数量（须为 10 的倍数），提交后按流程打款。</p><blockquote>提示：工作日处理，节假日顺延。</blockquote>','提现说明','已上架','2026-08-02 14:20'],['F003','黑名单怎么解除？','<p>联系客服，按提示提交申诉材料，审核通过后自动解除。</p><p><b>申诉材料：</b>账号信息 + 问题说明</p>','账号问题','已下架','2026-08-03 09:15'],['F004','充值未到账？','<p>请提供<b>订单号</b>与支付截图，客服将在 1-3 个工作日内核实处理。</p>','充值问题','已上架','2026-08-05 16:45']];
+  var rows = [['F001','如何充值金币？','<p>进入<b>个人中心</b> → 点击「<span style="color:#1677ff">充值中心</span>」→ 选择充值档位并完成支付，金币将<u>实时到账</u>。</p><ul><li>支持微信 / 支付宝支付</li><li>到账后可前往钱包查看余额</li></ul>','账户充值','已上架','2026-08-01 10:30'],['F002','如何提现？','<p>进入<b>钱包</b> → 「<span style="color:#1677ff">提现</span>」→ 填写提现钻石数量并提交。APP内无需绑定银行卡，收款认证请前往第三方平台完成。</p><blockquote>状态说明：提交后为“提现中”，放款后更新为“已提现”或“提现失败”。</blockquote>','提现说明','已上架','2026-08-02 14:20'],['F003','黑名单怎么解除？','<p>联系客服，按提示提交申诉材料，审核通过后自动解除。</p><p><b>申诉材料：</b>账号信息 + 问题说明</p>','账号问题','已下架','2026-08-03 09:15'],['F004','充值未到账？','<p>请提供<b>订单号</b>与支付截图，客服将在 1-3 个工作日内核实处理。</p>','充值问题','已上架','2026-08-05 16:45']];
   var cats = [['C001','账户充值','启用','2026-08-01 10:30'],['C002','提现说明','启用','2026-08-02 09:20'],['C003','账号问题','启用','2026-08-03 14:10'],['C004','充值问题','启用','2026-08-04 11:05'],['C005','其他','禁用','2026-08-05 16:40']];
   window._faqRows = rows;
   window._faqCats = cats;
@@ -4325,7 +4381,7 @@ PAGES['service-ticket'] = function() {
   var rows = [
     ['TK001','用户A','U100001','138****1111','充值未到账，已充值30元但余额没有增加','充值问题','2026-08-06 15:00','待回复'],
     ['TK002','用户C','U100003','137****3333','账号被禁用，无法登录，请求解封','账号问题','2026-08-06 14:00','待回复'],
-    ['TK003','用户F','U100005','135****5555','提现失败，提示银行卡信息错误','提现说明','2026-08-06 12:00','已回复'],
+    ['TK003','用户F','U100005','135****5555','提现失败，第三方提示实名认证信息不一致','提现说明','2026-08-06 12:00','已回复'],
     ['TK004','用户H','U100007','133****7777','礼物丢失，送的礼物没有到账','其他','2026-08-05 18:00','已关闭']
   ];
   window._ticketRows = rows;
