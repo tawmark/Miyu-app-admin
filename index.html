@@ -2223,7 +2223,7 @@ function showArticleModal(action, index) {
     + '</div>'
     + '<div contenteditable="true" id="article-content" style="min-height:200px;padding:14px;font-size:13px;line-height:1.8;outline:none">' + content + '</div>'
     + '</div></div>'
-    + '<div style="margin-bottom:14px"><strong style="font-size:13px">发布状态：</strong><select class="form-select" id="article-status" style="max-width:160px;margin-top:6px">' + statusOptions + '</select></div>'
+    + '<div style="margin-bottom:14px;padding:12px;background:var(--bg);border-radius:8px"><strong style="font-size:13px">上下架设置：</strong><select class="form-select" id="article-status" style="max-width:160px;margin-top:6px"><option value="已发布"' + (isEdit && data[3]==='已发布' ? ' selected' : '') + '>已发布（前台展示）</option><option value="已下架"' + (isEdit && data[3]==='已下架' ? ' selected' : '') + '>已下架（前台隐藏）</option></select><div style="font-size:12px;color:var(--ink-3);margin-top:6px">保存时立即应用该状态，可随时在编辑中调整。</div></div>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="confirmArticleSave(' + (isEdit ? index : -1) + ')">' + (isEdit ? '保存' : '发布') + '</button><button class="btn btn-default" onclick="closeArticleModal()">取消</button></div></div>';
   overlay.classList.add('show');
@@ -2242,6 +2242,17 @@ function confirmArticleSave(index) {
   if(!title || !title.value.trim()) { alert('请输入文章标题'); return; }
   var content = document.getElementById('article-content');
   if(content && !content.textContent.trim()) { alert('请输入文章内容'); return; }
+  var status = document.getElementById('article-status');
+  var selectedStatus = status ? status.value : '已发布';
+  if(index >= 0 && window._articleRows[index]) {
+    window._articleRows[index][1] = title.value.trim();
+    window._articleRows[index][2] = document.getElementById('article-cat').value;
+    window._articleRows[index][3] = selectedStatus;
+  } else if(window._articleRows) {
+    var nextNo = 'A' + String(window._articleRows.length + 1).padStart(3,'0');
+    var now = new Date().toISOString().slice(0,16).replace('T',' ');
+    window._articleRows.unshift([nextNo,title.value.trim(),document.getElementById('article-cat').value,selectedStatus,'运营',now,now]);
+  }
   closeArticleModal();
   alert(index >= 0 ? '文章已保存' : '文章发布成功');
   navigate('content-article','文章管理');
