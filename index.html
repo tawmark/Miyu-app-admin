@@ -2947,11 +2947,6 @@ PAGES['order-withdraw'] = function() {
       <div class="page-desc">APP提交提现申请后导出至第三方平台放款，再按商户订单号导入结果并同步APP状态</div>
     </div>
   </div>
-  <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
-    <div class="stat-card blue"><div class="num">${wdRows.filter(r=>r.status==='提现中').length}</div><div class="label">提现中</div></div>
-    <div class="stat-card green"><div class="num">${wdRows.filter(r=>r.status==='已提现').length}</div><div class="label">已提现</div></div>
-    <div class="stat-card orange"><div class="num">${wdRows.filter(r=>r.status==='提现失败').length}</div><div class="label">提现失败</div></div>
-  </div>
   <div class="filter-bar">
     <input id="wd-no" placeholder="商户订单号">
     <input id="wd-user" placeholder="申请人昵称/ID/手机号">
@@ -3037,9 +3032,6 @@ function showWithdrawDetail(orderId) {
     + '<tr><td style="color:var(--ink-3);padding:6px 0">打款金额</td><td style="font-weight:600;padding:6px 0">¥' + Number(r.amount).toFixed(2) + '</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">申请时间</td><td style="font-family:monospace;padding:6px 0">' + r.applyTime + '</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">身份证号</td><td style="font-family:monospace">' + (r.idCard || '—') + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">个税 / 手续费</td><td>' + (r.tax || 0) + ' / ' + (r.fee || 0) + ' 元</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">批次ID / 明细ID</td><td style="font-family:monospace">' + (r.thirdBatchId || '—') + ' / ' + (r.thirdDetailId || '—') + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">第三方收款信息</td><td>' + (r.bankCard || '由第三方平台认证') + (r.thirdPhone ? ' · ' + r.thirdPhone : '') + '</td></tr>'
     + (r.failureReason ? '<tr><td style="color:var(--ink-3);padding:6px 0">失败原因</td><td style="color:var(--red)">' + r.failureReason + '</td></tr>' : '')
     + '</table>'
     + '</div>'
