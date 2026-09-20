@@ -3143,8 +3143,9 @@ PAGES['ranking'] = function() {
       <div class="tab" onclick="switchTab(this,'panel-cp')">CP榜</div>
     </div>
     <div class="filter-bar">
-      <select><option>日榜</option><option>周榜</option><option>月榜</option></select>
-      <select><option>今日</option><option>昨日</option><option>自定义</option></select>
+      <select id="rank-period"><option>日榜</option><option>周榜</option><option>月榜</option></select>
+      <select id="rank-date-mode" onchange="toggleRankCustomDate(this.value)"><option value="today">今日</option><option value="yesterday">昨日</option><option value="custom">自定义时间</option></select>
+      <span id="rank-custom-date" style="display:none;align-items:center;gap:6px"><input type="date" id="rank-start-date" class="form-input" style="width:145px"><span style="color:var(--ink-3)">至</span><input type="date" id="rank-end-date" class="form-input" style="width:145px"></span>
       <span style="font-size:12px;color:var(--ink-3);margin-left:auto">仅展示前 30 位，前三特殊展示</span>
     </div>
     <div id="panel-shenhao" class="tab-panel active">
@@ -3158,7 +3159,7 @@ PAGES['ranking'] = function() {
     <div id="panel-xindong" class="tab-panel">
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>排名</th><th>用户</th><th>会员等级</th><th>魅力值</th></tr></thead>
+          <thead><tr><th>排名</th><th>用户</th><th>会员等级</th><th>魅力值 <span title="魅力值：用户通过收礼、通话等行为获得的综合影响力分值" style="display:inline-block;width:16px;height:16px;border:1px solid var(--ink-3);border-radius:50%;font-size:11px;line-height:15px;text-align:center;color:var(--ink-3);cursor:help">?</span></th></tr></thead>
           <tbody>${xindong.map(function(r, i){ return '<tr><td style="font-size:15px;font-weight:700">' + medal(i) + r[0] + '</td><td>' + rankUser(r[1], r[2], r[3]) + '</td><td>' + r[4] + '</td><td>' + r[5] + '</td></tr>'; }).join('')}</tbody>
         </table>
       </div>
@@ -3166,7 +3167,7 @@ PAGES['ranking'] = function() {
     <div id="panel-cp" class="tab-panel">
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>排名</th><th>用户A</th><th>用户B</th><th>亲密值</th></tr></thead>
+          <thead><tr><th>排名</th><th>用户A</th><th>用户B</th><th>亲密值 <span title="亲密值：两位用户之间通过互动累计形成的关系分值" style="display:inline-block;width:16px;height:16px;border:1px solid var(--ink-3);border-radius:50%;font-size:11px;line-height:15px;text-align:center;color:var(--ink-3);cursor:help">?</span></th></tr></thead>
           <tbody>${cp.map(function(r, i){ return '<tr><td style="font-size:15px;font-weight:700">' + medal(i) + r[0] + '</td><td>' + rankUser(r[1], r[2], r[3]) + '</td><td>' + rankUser(r[4], r[5], r[6]) + '</td><td>' + r[7] + '</td></tr>'; }).join('')}</tbody>
         </table>
       </div>
@@ -3179,6 +3180,11 @@ PAGES['ranking'] = function() {
     <div style="margin-top:12px"><button class="btn btn-primary">保存</button></div>
   </div>`;
 };
+
+function toggleRankCustomDate(mode) {
+  var box = document.getElementById('rank-custom-date');
+  if (box) box.style.display = mode === 'custom' ? 'inline-flex' : 'none';
+}
 
 // --- Market Signin ---
 PAGES['market-signin'] = function() {
