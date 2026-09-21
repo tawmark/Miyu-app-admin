@@ -3514,7 +3514,6 @@ PAGES['risk-report'] = function() {
       <input class="form-input" style="width:180px" placeholder="举报人昵称/ID/手机号">
       <input class="form-input" style="width:180px" placeholder="被举报人昵称/ID/手机号">
       <select><option>所有举报类型</option><option>色情低俗</option><option>广告骚扰</option><option>欺诈骗钱</option><option>侮辱谩骂</option><option>违法犯罪</option><option>其他</option></select>
-      <select><option>所有状态</option><option>待处理</option><option>已处理</option></select>
       <input type="date" class="form-input" style="width:140px" value="2026-08-01">
       <span style="color:var(--ink-3)">至</span>
       <input type="date" class="form-input" style="width:140px" value="2026-08-11">
@@ -3524,7 +3523,7 @@ PAGES['risk-report'] = function() {
   </div>
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>工单ID</th><th>举报人</th><th>被举报人</th><th>举报类型</th><th>时间</th><th>状态</th><th>备注说明</th><th>操作</th></tr></thead>
+      <thead><tr><th>工单ID</th><th>举报人</th><th>被举报人</th><th>举报类型</th><th>时间</th><th>备注说明</th><th>操作</th></tr></thead>
       <tbody>${rows.map(function(r, i){
         var reportUser = avatar(r[1]) + ' ' + r[1] + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + r[2] + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + r[3] + '</span>';
         var reportedUser = avatar(r[6]) + ' ' + r[6] + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + r[7] + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + r[8] + '</span>';
@@ -3532,7 +3531,7 @@ PAGES['risk-report'] = function() {
         var statusColor = status === '待处理' ? 'warning' : 'success';
         var operations = '';
         operations = '<button class="btn-action btn-action-view" onclick="handleReport(\'' + r[0] + '\',\'view\')">查看详情</button> <button class="btn-action btn-action-edit" onclick="navigate(\'member-detail\',\'会员详情\')">会员详情处理</button>';
-        return '<tr><td style="font-family:monospace">' + r[0] + '</td><td>' + reportUser + '</td><td>' + reportedUser + '</td><td>' + r[10] + '</td><td>' + r[9] + '</td><td>' + badge(status, statusColor) + '</td><td>' + (r[12] || '—') + '</td><td>' + operations + '</td></tr>';
+        return '<tr><td style="font-family:monospace">' + r[0] + '</td><td>' + reportUser + '</td><td>' + reportedUser + '</td><td>' + r[10] + '</td><td>' + r[9] + '</td><td>' + (r[12] || '—') + '</td><td>' + operations + '</td></tr>';
       }).join('')}</tbody>
     </table>
     ${pagination()}
@@ -3588,9 +3587,14 @@ function showReportDetail(id) {
     
     + '</div>'
     + '<div class="approve-modal-footer">'
+    + '<button class="btn btn-primary" onclick="saveReportRemark(\'' + id + '\')">保存</button> '
     + (status === '待处理' ? '<button class="btn btn-primary" onclick="navigate(\'member-detail\',\'会员详情\');closeReportDetail()">进入会员详情处理</button> ' : '')
     + '<button class="btn btn-default" onclick="closeReportDetail()">关闭</button></div></div>';
   overlay.classList.add('show');
+}
+
+function saveReportRemark(id) {
+  alert('举报备注已保存');
 }
 
 function showReportProcess(id) {
