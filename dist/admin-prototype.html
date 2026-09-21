@@ -3143,9 +3143,8 @@ PAGES['ranking'] = function() {
       <div class="tab" onclick="switchTab(this,'panel-cp')">CP榜</div>
     </div>
     <div class="filter-bar">
-      <select id="rank-period"><option>日榜</option><option>周榜</option><option>月榜</option></select>
-      <select id="rank-date-mode" onchange="toggleRankCustomDate(this.value)"><option value="today">今日</option><option value="yesterday">昨日</option><option value="custom">自定义时间</option></select>
-      <span id="rank-custom-date" style="display:none;align-items:center;gap:6px"><input type="date" id="rank-start-date" class="form-input" style="width:145px"><span style="color:var(--ink-3)">至</span><input type="date" id="rank-end-date" class="form-input" style="width:145px"></span>
+      <select id="rank-period" onchange="updateRankPeriod(this.value)"><option>日榜</option><option>周榜</option><option>月榜</option><option>自定义时间</option></select>
+      <span style="display:inline-flex;align-items:center;gap:6px"><input type="date" id="rank-start-date" class="form-input" style="width:145px" value="2026-08-13"><span style="color:var(--ink-3)">至</span><input type="date" id="rank-end-date" class="form-input" style="width:145px" value="2026-08-13"></span>
       <span style="font-size:12px;color:var(--ink-3);margin-left:auto">仅展示前 30 位，前三特殊展示</span>
     </div>
     <div id="panel-shenhao" class="tab-panel active">
@@ -3181,9 +3180,13 @@ PAGES['ranking'] = function() {
   </div>`;
 };
 
-function toggleRankCustomDate(mode) {
-  var box = document.getElementById('rank-custom-date');
-  if (box) box.style.display = mode === 'custom' ? 'inline-flex' : 'none';
+function updateRankPeriod(period) {
+  var start = document.getElementById('rank-start-date');
+  var end = document.getElementById('rank-end-date');
+  if (!start || !end || period === '自定义时间') return;
+  if (period === '日榜') { start.value = '2026-08-13'; end.value = '2026-08-13'; }
+  if (period === '周榜') { start.value = '2026-08-07'; end.value = '2026-08-13'; }
+  if (period === '月榜') { start.value = '2026-08-01'; end.value = '2026-08-31'; }
 }
 
 // --- Market Signin ---
