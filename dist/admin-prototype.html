@@ -226,8 +226,8 @@ tbody tr:last-child td { border-bottom: none; }
 .pill-primary { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; line-height: 1.5; vertical-align: middle; background: var(--primary-light); color: var(--primary); white-space: nowrap; }
 
 /* FAQ 富文本编辑器 */
-.faq-answer-cell { max-height: 40px; overflow: hidden; line-height: 20px; font-size: 12px; color: var(--ink-2); }
-.faq-answer-cell b, .faq-answer-cell strong { color: var(--ink); }
+.faq-summary-cell { max-height: 40px; overflow: hidden; line-height: 20px; font-size: 12px; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.faq-summary-cell b, .faq-summary-cell strong { color: var(--ink); }
 .rte-wrap { border: 1px solid var(--line); border-radius: 6px; margin-top: 4px; background: var(--card); }
 .rte-toolbar { display: flex; gap: 2px; align-items: center; padding: 6px 8px; border-bottom: 1px solid var(--line); background: var(--bg); border-radius: 6px 6px 0 0; flex-wrap: wrap; }
 .rte-btn { border: 1px solid transparent; background: transparent; border-radius: 4px; padding: 2px 8px; font-size: 12px; color: var(--ink-2); cursor: pointer; line-height: 1.6; font-family: inherit; }
@@ -1180,15 +1180,6 @@ function applyUnban() {
   refreshOpsPage();
 }
 var RECHARGE_UNITS = { coin: '金币', diamond: '钻石' };
-function escapeOpsText(value) {
-  return String(value).replace(/[&<>"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
-}
-function opsIsDeduction() { return document.getElementById('ops-recharge-mode').value === 'deduct'; }
-function showDeductionModal(uid, name, type) { showRechargeModal(uid, name, type || 'coin', 'deduct'); }
-function switchDeductionType(type) {
-  var uid = document.getElementById('ops-recharge-uid').value;
-  showDeductionModal(uid, opsGet(uid).name, type);
-}
 function opsRechargeCurrent() {
   var uid = document.getElementById('ops-recharge-uid').value;
   var type = document.getElementById('ops-recharge-type').value;
@@ -1202,48 +1193,45 @@ function setOpsAmount(v) {
 function updateRechargePreview() {
   var box = document.getElementById('ops-recharge-preview');
   if(!box) return;
-  var amount = Number(document.getElementById('ops-amount').value);
-  var deduct = opsIsDeduction();
+  var amount = parseInt(document.getElementById('ops-amount').value, 10);
   var cur = opsRechargeCurrent();
   var unit = RECHARGE_UNITS[document.getElementById('ops-recharge-type').value];
-  if(!Number.isFinite(amount) || amount <= 0) {
+  if(isNaN(amount) || amount === 0) {
     box.style.color = 'var(--ink-2)';
-    box.innerHTML = '当前余额 <b>' + cur.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '</b>，请输入' + (deduct ? '补扣' : '充值') + '数量（正数）';
+    box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b>，请输入充值/扣减数值';
     return;
   }
-  var next = deduct ? cur - amount : cur + amount;
-  if(next < 0 || !Number.isFinite(next)) {
+  var next = cur + amount;
+  if(next < 0) {
     box.style.color = 'var(--red)';
-    box.textContent = next < 0 ? '补扣数量超过当前余额，扣后余额不能为负数' : '充值数量过大，请调整数量';
+    box.innerHTML = '当前余额 ' + cur.toLocaleString() + ' ' + unit + ' → 扣减后余额 <b>' + next.toLocaleString() + '</b>，余额不能为负数，请调整金额';
     return;
   }
   box.style.color = 'var(--ink-2)';
-  box.innerHTML = '当前余额 <b>' + cur.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '</b> → ' + (deduct ? '补扣后' : '充值后') + ' <b style="color:' + (deduct ? 'var(--orange)' : 'var(--green)') + '">' + next.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '</b>';
+  box.innerHTML = '当前余额 <b>' + cur.toLocaleString() + ' ' + unit + '</b> → 操作后 <b style="color:' + (amount > 0 ? 'var(--green)' : 'var(--orange)') + '">' + next.toLocaleString() + ' ' + unit + '</b>';
 }
-function showRechargeModal(uid, name, type, mode) {
-  var deduct = mode === 'deduct';
+function showRechargeModal(uid, name, type) {
   var o = opsGet(uid);
   o.name = name; o.fromPage = 'member-detail';
   window._opsLastPage = o.fromPage;
   var overlay = opsOverlay();
   var unit = RECHARGE_UNITS[type];
   var cur = type === 'coin' ? opsBalance(uid, 'coin', 1250) : opsBalance(uid, 'diamond', 920);
-  var chips = type === 'coin' ? [100, 500, 1000] : [50, 200, 500];
-  var title = deduct ? '平台补扣' : (type === 'coin' ? '直充金币' : '直充钻石');
+  var chips = type === 'coin' ? [100, 500, 1000, -100, -500] : [50, 200, 500, -50, -200];
+  var title = type === 'coin' ? '直充金币' : '直充钻石';
   var accent = type === 'coin' ? 'var(--primary)' : 'var(--purple)';
   overlay.innerHTML = '<div class="approve-modal" style="width:460px">'
     + '<div class="approve-modal-header"><span>' + title + '</span><button class="reject-modal-close" onclick="closeOpsModal()">&times;</button></div>'
     + '<div class="approve-modal-body">'
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span> <span style="margin-left:auto;font-size:12px;color:var(--ink-2)">当前余额 <b style="color:' + accent + '">' + cur.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '</b></span></div>'
-    + (deduct ? '<div style="margin-bottom:12px"><strong>补扣币种</strong><select class="form-input" style="margin-top:6px" onchange="switchDeductionType(this.value)"><option value="coin"' + (type === 'coin' ? ' selected' : '') + '>金币</option><option value="diamond"' + (type === 'diamond' ? ' selected' : '') + '>钻石</option></select></div>' : '')
-    + '<div style="margin-bottom:12px"><strong>' + (deduct ? '补扣数量' : '充值数量') + '</strong><div style="display:flex;align-items:center;gap:6px;margin-top:6px"><input id="ops-amount" class="form-input" type="number" min="0" step="any" placeholder="请输入正数，如 500 或 0.5" style="flex:1" oninput="updateRechargePreview()"><span style="font-size:13px;color:var(--ink-2)">' + unit + '</span></div>'
-    + '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">' + chips.map(function(c){ return '<span style="display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;color:var(--primary)" onclick="setOpsAmount(' + c + ')">' + c + '</span>'; }).join('') + '</div>'
-    + '<div style="font-size:12px;color:var(--ink-3);margin-top:6px">' + (deduct ? '用于充值错误等余额纠正，补扣数量不能超过当前余额' : '直充仅增加余额；充值错误请通过平台补扣处理') + '</div></div>'
-    + '<div style="margin-bottom:12px"><strong>操作原因' + (deduct ? ' <span style="color:var(--red)">必填</span>' : '') + '</strong><input id="ops-recharge-reason" class="form-input" placeholder="' + (deduct ? '请填写补扣原因，将记录到操作日志' : '选填，将记录到操作日志') + '" style="margin-top:6px"></div>'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink)">' + avatar(name) + ' <b>' + name + '</b> <span style="color:var(--ink-2)">' + uid + '</span> <span style="margin-left:auto;font-size:12px;color:var(--ink-2)">当前余额 <b style="color:' + accent + '">' + cur.toLocaleString() + ' ' + unit + '</b></span></div>'
+    + '<div style="margin-bottom:12px"><strong>充值数量</strong><div style="display:flex;align-items:center;gap:6px;margin-top:6px"><input id="ops-amount" class="form-input" type="number" step="1" placeholder="如 500，扣减填负数如 -100" style="flex:1" oninput="updateRechargePreview()"><span style="font-size:13px;color:var(--ink-2)">' + unit + '</span></div>'
+    + '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">' + chips.map(function(c){ return '<span style="display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;' + (c > 0 ? 'color:var(--primary)' : 'color:var(--orange)') + '" onclick="setOpsAmount(' + c + ')">' + (c > 0 ? '+' : '') + c + '</span>'; }).join('') + '</div>'
+    + '<div style="font-size:12px;color:var(--ink-3);margin-top:6px">支持负数：负数为扣减（反向充值），将直接减少该用户余额</div></div>'
+    + '<div style="margin-bottom:12px"><strong>操作原因</strong><input id="ops-recharge-reason" class="form-input" placeholder="扣减操作必填，将记录到操作日志" style="margin-top:6px"></div>'
     + '<div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7" id="ops-recharge-preview"></div>'
-    + '<input type="hidden" id="ops-recharge-uid" value="' + uid + '"><input type="hidden" id="ops-recharge-type" value="' + type + '"><input type="hidden" id="ops-recharge-mode" value="' + (deduct ? 'deduct' : 'recharge') + '">'
+    + '<input type="hidden" id="ops-recharge-uid" value="' + uid + '"><input type="hidden" id="ops-recharge-type" value="' + type + '">'
     + '</div>'
-    + '<div class="approve-modal-footer"><button class="btn ' + (deduct ? 'btn-danger' : 'btn-primary') + '" onclick="applyRecharge()" style="' + (!deduct && type === 'diamond' ? 'background:var(--purple)' : '') + '">确认' + title + (deduct ? unit : '') + '</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
+    + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="applyRecharge()" style="' + (type === 'coin' ? '' : 'background:var(--purple)') + '">确认' + title + '</button><button class="btn btn-default" onclick="closeOpsModal()">取消</button></div></div>';
   overlay.classList.add('show');
   updateRechargePreview();
 }
@@ -1253,23 +1241,18 @@ function applyRecharge() {
   var unit = RECHARGE_UNITS[type];
   var o = opsGet(uid);
   var name = o.name || '用户 ' + uid;
-  var amount = Number(document.getElementById('ops-amount').value);
-  var deduct = opsIsDeduction();
+  var amount = parseInt(document.getElementById('ops-amount').value, 10);
   var reason = document.getElementById('ops-recharge-reason').value.trim();
-  if(!Number.isFinite(amount) || amount <= 0) { showTagToast('请输入' + (deduct ? '补扣' : '充值') + '数量（仅允许正数）', 'error'); return; }
+  if(isNaN(amount) || amount === 0) { showTagToast('请输入充值/扣减数量（不能为 0）', 'error'); return; }
   var cur = type === 'coin' ? opsBalance(uid, 'coin', 1250) : opsBalance(uid, 'diamond', 920);
-  if(deduct && !reason) { showTagToast('平台补扣必须填写操作原因', 'error'); return; }
-  var next = deduct ? cur - amount : cur + amount;
-  if(next < 0) { showTagToast('扣减后余额不能为负数（当前余额 ' + cur.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '）', 'error'); return; }
-  if(!Number.isFinite(next)) { showTagToast('充值数量过大，请调整数量', 'error'); return; }
+  if(amount < 0 && !reason) { showTagToast('扣减操作必须填写操作原因', 'error'); return; }
+  var next = cur + amount;
+  if(next < 0) { showTagToast('扣减后余额不能为负数（当前余额 ' + cur.toLocaleString() + ' ' + unit + '）', 'error'); return; }
   o[type] = next;
-  if(!o.transactions) o.transactions = [];
-  o.transactions.unshift({id:'ADJ' + Date.now() + '-' + o.transactions.length, type:type, action:deduct ? '平台补扣' : '内部直充', amount:deduct ? -amount : amount, balance:next, reason:reason, time:fmtOpsTime(new Date())});
   var el = document.getElementById(type === 'coin' ? 'stat-coin-num' : 'stat-diamond-num');
-  if(el) el.textContent = next.toLocaleString(undefined, {maximumFractionDigits:20});
+  if(el) el.textContent = next.toLocaleString();
   closeOpsModal();
-  showTagToast('已为「' + name + '」' + (deduct ? '平台补扣 -' : '直充 +') + amount.toLocaleString(undefined, {maximumFractionDigits:20}) + ' ' + unit + '，余额 ' + next.toLocaleString(undefined, {maximumFractionDigits:20}), 'success');
-  refreshOpsPage();
+  showTagToast(amount > 0 ? '已为「' + name + '」直充 +' + amount.toLocaleString() + ' ' + unit + '，余额 ' + next.toLocaleString() : '已为「' + name + '」扣减 ' + Math.abs(amount).toLocaleString() + ' ' + unit + '，余额 ' + next.toLocaleString() + (reason ? ' · 原因：' + reason : ''), 'success');
 }
 function memberOpsHtml(uid, name) {
   var o = opsGet(uid);
@@ -1283,7 +1266,6 @@ function memberOpsHtml(uid, name) {
   }
   s += '<button class="btn btn-primary" onclick="showRechargeModal(\'' + uid + '\',\'' + name + '\',\'coin\')">直充金币</button>';
   s += '<button class="btn btn-primary" style="background:var(--purple)" onclick="showRechargeModal(\'' + uid + '\',\'' + name + '\',\'diamond\')">直充钻石</button>';
-  s += '<button class="btn btn-danger" onclick="showDeductionModal(\'' + uid + '\',\'' + name + '\')">平台补扣</button>';
   return s;
 }
 
@@ -1295,7 +1277,7 @@ PAGES['member-list'] = function() {
     ['10003','用户C','137****5555','男','560','Lv1','禁用', '离线','否','-','手机认证','2026-07-13 18:42:17','20/2'],
     ['10004','用户D','136****4444','女','3,200','Lv5','正常', '通话中','否','五星','视频认证','2026-07-14 22:05:48','50/5'],
     ['10005','用户E','135****3333','TS','1,800','Lv2','注销', '离线','否','四星','实名认证','2026-07-15 11:30:26','40/3'],
-    ['10006','用户F','134****2222','男','320','Lv1','正常', '在线','否','-','手机认证','2026-07-16 08:18:52','-'],
+    ['10006','用户F','134****2222','男','320','Lv1','正常', '在线','否','-','未认证','2026-07-16 08:18:52','-'],
     ['10007','用户G','133****1111','女','5,600','Lv4','正常', '离线','是','五星','全部认证','2026-07-17 16:47:39','50/5'],
     ['10008','用户H','132****0000','男','750','Lv1','正常', '通话中','否','-','手机认证','2026-07-18 20:12:14','20/2'],
   ];
@@ -1312,7 +1294,7 @@ PAGES['member-list'] = function() {
     {type:'select',label:'性别',options:['男','女','TS']},
     {type:'select',label:'用户状态',options:['正常','禁用','注销']},
     {type:'select',label:'颜值评分',options:['三星','四星','五星']},
-    {type:'select',label:'认证状态',options:['实名认证','视频认证','手机认证','全部认证']},
+    {type:'select',label:'认证状态',options:['未认证','实名认证','视频认证','手机认证','全部认证']},
     {type:'select',label:'等级',options:['Lv1','Lv2','Lv3','Lv4','Lv5']},
     {type:'date-range',label:'注册时间'},
   ])}
@@ -1325,7 +1307,7 @@ PAGES['member-list'] = function() {
           <td>${r[4]}</td><td>${badge(r[5], 'info')}</td>
           <td>${badge(r[6], r[6]==='正常'?'success':r[6]==='禁用'?'warning':'danger')}${(r[6]==='禁用' && window._memberOps[r[0]] && window._memberOps[r[0]].unbanAt) ? `<div style="font-size:11px;color:var(--ink-3);margin-top:2px;white-space:nowrap">${window._memberOps[r[0]].unbanAt==='永久' ? '永久禁用' : '至 '+window._memberOps[r[0]].unbanAt+' 自动解禁'}</div>` : ''}</td>
           <td>${r[9]==='-' ? '<span style="font-size:12px;color:var(--ink-3)">—</span>' : `<span style="color:#f59e0b;font-size:13px">${'★'.repeat({'三星':3,'四星':4,'五星':5}[r[9]])}${'☆'.repeat(5-{'三星':3,'四星':4,'五星':5}[r[9]])}</span> <span style="font-size:12px;color:var(--ink-2);margin-left:2px">${r[9]}</span>`}</td>
-          <td>${badge(r[10], r[10]==='全部认证'?'success':'info')}</td>
+          <td>${badge(r[10], r[10]==='全部认证'?'success':r[10]==='未认证'?'default':'info')}</td>
           <td style="white-space:nowrap;font-size:12px">${r[12]==='-' ? '<span style="color:var(--ink-3)">—</span>' : `<span>视频<span style="color:var(--primary);font-weight:600">${r[12].split('/')[0]}</span> · 文字<span style="color:var(--primary);font-weight:600">${r[12].split('/')[1]}</span></span>`}</td>
           <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r[11]}</td>
           <td style="white-space:nowrap">
@@ -1385,25 +1367,21 @@ PAGES['member-detail'] = function() {
     ['DM20260803002','通话收益','收入','+150','1,600','用户F (ID:10006)','与用户F通话 15分钟','2026-08-03 16:45:20'],
     ['DM20260803001','系统赠送','收入','+200','1,450','—','新用户注册赠送','2026-08-03 14:23:05'],
   ];
-  // 会员提现记录：银行卡由第三方平台认证，本系统按商户订单号同步状态
+  // [提现单号, 昵称, 性别, 用户ID, 手机号, 姓名, 身份证号, 提现钻石, 到账金额, 银行卡号, 申请时间]
   var withdrawRows = [
-    {no:'WD20260811001',idCard:'210101199206180015',diamonds:'1,250',amount:'¥125.00',status:'提现中',applyTime:'2026-08-11 14:30:00'},
-    {no:'WD20260810001',idCard:'210101199206180015',diamonds:'600',amount:'¥60.00',status:'提现失败',applyTime:'2026-08-10 12:00:00',reason:'第三方实名认证信息不一致'},
-    {no:'WD20260809002',idCard:'210101199206180015',diamonds:'1,000',amount:'¥100.00',status:'已提现',applyTime:'2026-08-09 11:20:15'},
-    {no:'WD20260808001',idCard:'210101199206180015',diamonds:'800',amount:'¥80.00',status:'已提现',applyTime:'2026-08-08 16:45:00'},
-    {no:'WD20260804001',idCard:'210101199206180015',diamonds:'800',amount:'¥80.00',status:'已提现',applyTime:'2026-08-04 10:05:28'},
+    ['WD20260811001','用户A','男','10001','13888888888','赵磊','210101199206180015','1,250','¥125.00','6222020200115544332','2026-08-11 14:30:00'],
+    ['WD20260810001','用户A','男','10001','13888888888','赵磊','210101199206180015','600','¥60.00','6222020200115544332','2026-08-10 12:00:00'],
+    ['WD20260809002','用户A','男','10001','13888888888','赵磊','210101199206180015','1,000','¥100.00','6225880100123456','2026-08-09 11:20:15'],
+    ['WD20260808001','用户A','男','10001','13888888888','赵磊','210101199206180015','800','¥80.00','6217003810012345678','2026-08-08 16:45:00'],
+    ['WD20260804001','用户A','男','10001','13888888888','赵磊','210101199206180015','800','¥80.00','6222020200115544332','2026-08-04 10:05:28'],
+    ['WD20260802001','用户A','男','10001','13888888888','赵磊','210101199206180015','600','¥60.00','6228480402564890018','2026-08-02 14:50:00'],
+    ['WD20260730001','用户A','男','10001','13888888888','赵磊','210101199206180015','500','¥50.00','6225880100123456','2026-07-30 09:15:00'],
+    ['WD20260729001','用户A','男','10001','13888888888','赵磊','210101199206180015','350','¥35.00','6222020200115544332','2026-07-29 08:00:00'],
   ];
   function coinTypeBadge(type) {
-    var income = ['充值','内部直充','签到奖励','系统赠送'];
+    var income = ['充值','签到奖励','系统赠送'];
     return income.indexOf(type) !== -1 ? 'success' : 'danger';
   }
-  (opsGet('10001').transactions || []).slice().reverse().forEach(function(t) {
-    var change = (t.amount > 0 ? '+' : '') + t.amount.toLocaleString(undefined, {maximumFractionDigits:20});
-    var direction = t.amount > 0 ? '收入' : '支出';
-    var reason = escapeOpsText(t.reason || '—');
-    if(t.type === 'coin') coinRows.unshift([t.id,t.action,'工作人员',t.amount > 0 ? '内部直充' : '—',direction,change,t.balance.toLocaleString(undefined, {maximumFractionDigits:20}),'—',reason,t.time]);
-    else diamondRows.unshift([t.id,t.action,direction,change,t.balance.toLocaleString(undefined, {maximumFractionDigits:20}),'—',reason,t.time]);
-  });
   return `
   <div class="page-title">会员详情</div>
   
@@ -1430,6 +1408,7 @@ PAGES['member-detail'] = function() {
         <div class="info-item"><span class="label">所在地</span><span class="value">北京市</span></div>
         <div class="info-item"><span class="label">职业</span><span class="value">互联网</span></div>
         <div class="info-item"><span class="label">身高</span><span class="value">178cm</span></div>
+        <div class="info-item"><span class="label">体重</span><span class="value">70kg</span></div>
         <div class="info-item"><span class="label">我的标签</span><span class="value"><span class="tag-pill" style="background:var(--primary-light);color:var(--primary)">交友</span><span class="tag-pill" style="background:var(--green-bg);color:var(--green)">运动</span><span class="tag-pill" style="background:var(--orange-bg);color:var(--orange)">音乐</span></span></div>
       </div>
       <div style="font-size:14px;font-weight:600;color:var(--ink);margin:20px 0 12px;padding-left:8px;border-left:3px solid var(--primary)">认证与状态</div>
@@ -1462,14 +1441,14 @@ PAGES['member-detail'] = function() {
 
     <div class="tab-panel" id="panel-coin">
       <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-card blue"><div class="num" id="stat-coin-num">${opsBalance('10001','coin',1250).toLocaleString(undefined, {maximumFractionDigits:20})}</div><div class="label">当前金币余额</div></div>
+        <div class="stat-card blue"><div class="num" id="stat-coin-num">${opsBalance('10001','coin',1250).toLocaleString()}</div><div class="label">当前金币余额</div></div>
         <div class="stat-card green"><div class="num">5,200</div><div class="label">累计充值</div></div>
         <div class="stat-card orange"><div class="num">4,238</div><div class="label">累计消耗</div></div>
         <div class="stat-card purple"><div class="num">520</div><div class="label">累计签到奖励</div></div>
       </div>
       ${filterBar([
         {type:'select',label:'收支类型',options:['收入','支出']},
-        {type:'select',label:'交易类型',options:['充值','内部直充','平台补扣','通话消耗','送礼','视频速配','文字聊天','守护','签到奖励','系统赠送']},
+        {type:'select',label:'交易类型',options:['充值','通话消耗','送礼','视频速配','文字聊天','守护','签到奖励','系统赠送']},
         {type:'select',label:'充值渠道',options:['App充值','官网充值','工作人员']},
         {type:'select',label:'支付方式',options:['支付宝','微信渠道','内部直充']},
         {type:'date-range',label:'时间'},
@@ -1498,14 +1477,14 @@ PAGES['member-detail'] = function() {
 
     <div class="tab-panel" id="panel-diamond">
       <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-card blue"><div class="num" id="stat-diamond-num">${opsBalance('10001','diamond',920).toLocaleString(undefined, {maximumFractionDigits:20})}</div><div class="label">当前钻石余额</div></div>
+        <div class="stat-card blue"><div class="num" id="stat-diamond-num">${opsBalance('10001','diamond',920).toLocaleString()}</div><div class="label">当前钻石余额</div></div>
         <div class="stat-card green"><div class="num">2,120</div><div class="label">累计收益</div></div>
         <div class="stat-card orange"><div class="num">1,800</div><div class="label">累计提现扣除</div></div>
         <div class="stat-card purple"><div class="num">530</div><div class="label">今日收益</div></div>
       </div>
       ${filterBar([
         {type:'select',label:'收支类型',options:['收入','支出']},
-        {type:'select',label:'交易类型',options:['内部直充','平台补扣','通话收益','礼物收益','文字聊天','守护收益','提现扣除','充值奖励','提现奖励','系统赠送']},
+        {type:'select',label:'交易类型',options:['通话收益','礼物收益','文字聊天','守护收益','提现扣除','充值奖励','提现奖励','系统赠送']},
         {type:'date-range',label:'时间'},
       ])}
       <div class="table-wrapper">
@@ -1514,7 +1493,7 @@ PAGES['member-detail'] = function() {
           <tbody>
             ${diamondRows.map(r => `<tr>
               <td style="font-family:monospace;font-size:12px">${r[0]}</td>
-              <td>${badge(r[1], r[2]==='支出'?'danger':r[1]==='充值奖励'?'info':r[1]==='提现奖励'?'purple':r[1]==='守护收益'?'primary':'success')}</td>
+              <td>${badge(r[1], r[1]==='提现扣除'?'danger':r[1]==='充值奖励'?'info':r[1]==='提现奖励'?'purple':r[1]==='守护收益'?'primary':'success')}</td>
               <td>${r[2]==='收入' ? '<span style="color:var(--green)">收入</span>' : '<span style="color:var(--red)">支出</span>'}</td>
               <td style="font-weight:600;color:${r[2]==='收入'?'var(--green)':'var(--red)'}">${r[3]}</td>
               <td>${r[4]}</td>
@@ -1530,9 +1509,9 @@ PAGES['member-detail'] = function() {
 
     <div class="tab-panel" id="panel-withdraw">
       <div class="info-grid" style="margin-bottom:20px">
-        <div class="info-item"><span class="label">收款认证</span><span class="value">由第三方平台完成</span></div>
-        <div class="info-item"><span class="label">APP绑卡要求</span><span class="value">无需绑定银行卡</span></div>
-        <div class="info-item"><span class="label">状态同步</span><span class="value">按商户订单号同步</span></div>
+        <div class="info-item"><span class="label">持卡人</span><span class="value">赵磊</span></div>
+        <div class="info-item"><span class="label">银行卡号</span><span class="value" style="font-family:monospace">6222 0202 0011 5544 332</span></div>
+        <div class="info-item"><span class="label">绑定时间</span><span class="value">2026-07-12 09:15:33</span></div>
       </div>
       <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
         <div class="stat-card blue"><div class="num">¥370</div><div class="label">今日提现</div></div>
@@ -1540,17 +1519,19 @@ PAGES['member-detail'] = function() {
         <div class="stat-card purple"><div class="num">¥5,490</div><div class="label">累计提现</div></div>
       </div>
       ${filterBar([
-        {type:'select',label:'提现状态',options:['提现中','已提现','提现失败']},
         {type:'date-range',label:'申请时间'},
       ])}
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>商户订单号</th><th>身份证号</th><th>提现钻石</th><th>打款金额</th><th>状态</th><th>申请时间</th></tr></thead>
+          <thead><tr><th>提现单号</th><th>提现钻石</th><th>到账金额</th><th>银行卡号</th><th>申请时间</th><th>操作</th></tr></thead>
           <tbody>
             ${withdrawRows.map(r => `<tr>
-              <td style="font-family:monospace;font-size:12px">${r.no}</td><td style="font-family:monospace;font-size:12px">${r.idCard}</td><td>${r.diamonds}</td><td style="font-weight:600">${r.amount}</td>
-              <td>${badge(r.status,r.status==='已提现'?'success':r.status==='提现失败'?'danger':'warning')}${r.reason?'<div style="font-size:11px;color:var(--red);margin-top:3px">'+r.reason+'</div>':''}</td>
-              <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r.applyTime}</td>
+              <td style="font-family:monospace;font-size:12px">${r[0]}</td>
+              <td>${r[7]}</td>
+              <td style="font-weight:600">${r[8]}</td>
+              <td style="font-family:monospace;font-size:12px">${r[9]}</td>
+              <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r[10]}</td>
+              <td><button class="btn-action btn-action-view" onclick="showWithdrawDetail('${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}','${r[9]}','${r[10]}')">详情</button></td>
             </tr>`).join('')}
           </tbody>
         </table>
@@ -2223,7 +2204,7 @@ function showArticleModal(action, index) {
     + '</div>'
     + '<div contenteditable="true" id="article-content" style="min-height:200px;padding:14px;font-size:13px;line-height:1.8;outline:none">' + content + '</div>'
     + '</div></div>'
-    + '<div style="margin-bottom:14px;padding:12px;background:var(--bg);border-radius:8px"><strong style="font-size:13px">上下架设置：</strong><select class="form-select" id="article-status" style="max-width:160px;margin-top:6px"><option value="已发布"' + (isEdit && data[3]==='已发布' ? ' selected' : '') + '>已发布（前台展示）</option><option value="已下架"' + (isEdit && data[3]==='已下架' ? ' selected' : '') + '>已下架（前台隐藏）</option></select><div style="font-size:12px;color:var(--ink-3);margin-top:6px">保存时立即应用该状态，可随时在编辑中调整。</div></div>'
+    + '<div style="margin-bottom:14px"><strong style="font-size:13px">发布状态：</strong><select class="form-select" id="article-status" style="max-width:160px;margin-top:6px">' + statusOptions + '</select></div>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="confirmArticleSave(' + (isEdit ? index : -1) + ')">' + (isEdit ? '保存' : '发布') + '</button><button class="btn btn-default" onclick="closeArticleModal()">取消</button></div></div>';
   overlay.classList.add('show');
@@ -2242,17 +2223,6 @@ function confirmArticleSave(index) {
   if(!title || !title.value.trim()) { alert('请输入文章标题'); return; }
   var content = document.getElementById('article-content');
   if(content && !content.textContent.trim()) { alert('请输入文章内容'); return; }
-  var status = document.getElementById('article-status');
-  var selectedStatus = status ? status.value : '已发布';
-  if(index >= 0 && window._articleRows[index]) {
-    window._articleRows[index][1] = title.value.trim();
-    window._articleRows[index][2] = document.getElementById('article-cat').value;
-    window._articleRows[index][3] = selectedStatus;
-  } else if(window._articleRows) {
-    var nextNo = 'A' + String(window._articleRows.length + 1).padStart(3,'0');
-    var now = new Date().toISOString().slice(0,16).replace('T',' ');
-    window._articleRows.unshift([nextNo,title.value.trim(),document.getElementById('article-cat').value,selectedStatus,'运营',now,now]);
-  }
   closeArticleModal();
   alert(index >= 0 ? '文章已保存' : '文章发布成功');
   navigate('content-article','文章管理');
@@ -2549,6 +2519,7 @@ function showGuardianOrderDetail(orderId, guardianName, guardianId, guardianPhon
     + '<tr><td style="color:var(--ink-3);padding:6px 0">被守护者</td><td style="padding:6px 0">' + guardedName + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + guardedId + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + guardedPhone + '</span></td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">消耗金币</td><td style="padding:6px 0">' + coins + ' 金币</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">守护状态</td><td style="padding:6px 0">' + statusHtml + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">守护类型</td><td style="padding:6px 0">限定名额守护（名额唯一，可被他人加价抢占）</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">失效时间</td><td style="padding:6px 0">' + expireTimeHtml + '</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">失效原因</td><td style="padding:6px 0">' + reasonHtml + '</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">创建时间</td><td style="font-family:monospace;padding:6px 0">' + createTime + '</td></tr>'
@@ -2828,19 +2799,18 @@ PAGES['order-recharge'] = function() {
   return `
   <div class="page-title">充值记录</div>
   <div class="page-desc">展示充值订单记录列表和数量</div>
-  ${filterBar([{label:'消费者昵称'},{label:'消费者ID'},{label:'消费者手机号'},{type:'select',label:'充值类型',options:['金币','钻石']},{type:'select',label:'支付方式',options:['支付宝','微信支付','Apple支付','内部充值']},{type:'select',label:'充值渠道',options:['官网','App充值','工作人员']},{type:'select',label:'会员等级',options:['Lv1','Lv2','Lv3','Lv4','Lv5','Lv6']},{type:'select',label:'充值状态',options:['支付成功','取消支付']},{type:'date-range',label:'创建时间'}])}
+  ${filterBar([{label:'消费者昵称'},{label:'消费者ID'},{label:'消费者手机号'},{type:'select',label:'充值类型',options:['金币']},{type:'select',label:'支付方式',options:['支付宝','微信渠道','内部直充']},{type:'select',label:'充值渠道',options:['官网','App充值','工作人员']},{type:'select',label:'会员等级',options:['Lv1','Lv2','Lv3','Lv4','Lv5','Lv6']},{type:'select',label:'充值状态',options:['支付成功','取消支付']},{type:'date-range',label:'创建时间'}])}
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>订单编号</th><th>充值服务类型</th><th>充值类型</th><th>人民币金额</th><th>充值数量</th><th>支付方式</th><th>充值渠道</th><th>消费者</th><th>会员等级</th><th>充值状态</th><th>备注</th><th>创建时间</th><th>操作</th></tr></thead>
+      <thead><tr><th>订单编号</th><th>充值服务类型</th><th>充值类型</th><th>金额(¥/金币/赠送)</th><th>支付方式</th><th>充值渠道</th><th>消费者</th><th>会员等级</th><th>充值状态</th><th>备注</th><th>创建时间</th><th>操作</th></tr></thead>
       <tbody>
-        <tr><td style="font-family:monospace;font-size:12px">RO20260806001</td><td>98元礼包</td><td>金币</td><td style="font-size:12px">¥98</td><td>980</td><td>支付宝</td><td>App充值</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${badge('Lv3','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:00:22</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806001','98元礼包','金币','98','980','50','支付宝','App充值','用户A','U001','138****8001','Lv3','支付成功','—','2026-08-06 15:00:22')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">RO20260806007</td><td>内部直充</td><td>钻石</td><td>—</td><td>2,000</td><td>内部充值</td><td>工作人员</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${badge('Lv3','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">运营补偿钻石</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:10:22</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806007','内部直充','钻石','—','2,000','0','内部充值','工作人员','用户A','U001','138****8001','Lv3','支付成功','运营补偿钻石','2026-08-06 15:10:22')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">RO20260806002</td><td>298元礼包</td><td>金币</td><td style="font-size:12px">¥298</td><td>2980</td><td>微信支付</td><td>官网</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${badge('Lv5','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:30:10</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806002','298元礼包','金币','298','2980','200','微信支付','官网','用户C','U003','137****8003','Lv5','支付成功','—','2026-08-06 14:30:10')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">RO20260806003</td><td>6元新手包</td><td>金币</td><td style="font-size:12px">¥6</td><td>60</td><td>内部充值</td><td>工作人员</td><td>${userTag('用户F','女','U006','134****8006')}</td><td>${badge('Lv1','info')}</td><td>${badge('取消支付','default')}</td><td style="font-size:12px;color:var(--ink-3)">用户主动取消</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:00:05</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806003','6元新手包','金币','6','60','0','内部充值','工作人员','用户F','U006','134****8006','Lv1','取消支付','用户主动取消','2026-08-06 14:00:05')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">RO20260806004</td><td>598元礼包</td><td>金币</td><td style="font-size:12px">¥598</td><td>5980</td><td>微信支付</td><td>App充值</td><td>${userTag('用户H','男','U007','133****8007')}</td><td>${badge('Lv4','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:15:33</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806004','598元礼包','金币','598','5980','500','微信支付','App充值','用户H','U007','133****8007','Lv4','支付成功','—','2026-08-06 13:15:33')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">RO20260806005</td><td>30元礼包</td><td>金币</td><td style="font-size:12px">¥30</td><td>300</td><td>支付宝</td><td>App充值</td><td>${userTag('用户D','女','U004','136****8004')}</td><td>${badge('Lv2','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 12:45:18</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806005','30元礼包','金币','30','300','15','支付宝','App充值','用户D','U004','136****8004','Lv2','支付成功','—','2026-08-06 12:45:18')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">RO20260806006</td><td>98元礼包</td><td>金币</td><td style="font-size:12px">¥98</td><td>980</td><td>微信支付</td><td>官网</td><td>${userTag('用户B','女','U002','139****8002')}</td><td>${badge('Lv3','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:20:42</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806006','98元礼包','金币','98','980','50','微信支付','官网','用户B','U002','139****8002','Lv3','支付成功','—','2026-08-06 11:20:42')">详情</button></td></tr>
-        <tr><td style="font-family:monospace;font-size:12px">RO20260805007</td><td>内部直充</td><td>金币</td><td style="font-size:12px">¥500</td><td>5000</td><td>内部充值</td><td>工作人员</td><td>${userTag('用户E','男','U005','135****8005')}</td><td>${badge('Lv6','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">运营补偿充值</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-05 17:30:08</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260805007','内部直充','金币','500','5000','0','内部充值','工作人员','用户E','U005','135****8005','Lv6','支付成功','运营补偿充值','2026-08-05 17:30:08')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">RO20260806001</td><td>98元礼包</td><td>金币</td><td style="font-size:12px">¥98 / 980 / 赠50</td><td>支付宝</td><td>App充值</td><td>${userTag('用户A','男','U001','138****8001')}</td><td>${badge('Lv3','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 15:00:22</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806001','98元礼包','金币','98','980','50','支付宝','App充值','用户A','U001','138****8001','Lv3','支付成功','—','2026-08-06 15:00:22')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">RO20260806002</td><td>298元礼包</td><td>金币</td><td style="font-size:12px">¥298 / 2980 / 赠200</td><td>微信渠道</td><td>官网</td><td>${userTag('用户C','男','U003','137****8003')}</td><td>${badge('Lv5','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:30:10</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806002','298元礼包','金币','298','2980','200','微信渠道','官网','用户C','U003','137****8003','Lv5','支付成功','—','2026-08-06 14:30:10')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">RO20260806003</td><td>6元新手包</td><td>金币</td><td style="font-size:12px">¥6 / 60 / 赠0</td><td>内部直充</td><td>工作人员</td><td>${userTag('用户F','女','U006','134****8006')}</td><td>${badge('Lv1','info')}</td><td>${badge('取消支付','default')}</td><td style="font-size:12px;color:var(--ink-3)">用户主动取消</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 14:00:05</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806003','6元新手包','金币','6','60','0','内部直充','工作人员','用户F','U006','134****8006','Lv1','取消支付','用户主动取消','2026-08-06 14:00:05')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">RO20260806004</td><td>598元礼包</td><td>金币</td><td style="font-size:12px">¥598 / 5980 / 赠500</td><td>微信渠道</td><td>App充值</td><td>${userTag('用户H','男','U007','133****8007')}</td><td>${badge('Lv4','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 13:15:33</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806004','598元礼包','金币','598','5980','500','微信渠道','App充值','用户H','U007','133****8007','Lv4','支付成功','—','2026-08-06 13:15:33')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">RO20260806005</td><td>30元礼包</td><td>金币</td><td style="font-size:12px">¥30 / 300 / 赠15</td><td>支付宝</td><td>App充值</td><td>${userTag('用户D','女','U004','136****8004')}</td><td>${badge('Lv2','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">—</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 12:45:18</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806005','30元礼包','金币','30','300','15','支付宝','App充值','用户D','U004','136****8004','Lv2','支付成功','—','2026-08-06 12:45:18')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">RO20260806006</td><td>98元礼包</td><td>金币</td><td style="font-size:12px">¥98 / 980 / 赠50</td><td>微信渠道</td><td>官网</td><td>${userTag('用户B','女','U002','139****8002')}</td><td>${badge('Lv3','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">活动赠送额外50金币</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-06 11:20:42</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260806006','98元礼包','金币','98','980','50','微信渠道','官网','用户B','U002','139****8002','Lv3','支付成功','活动赠送额外50金币','2026-08-06 11:20:42')">详情</button></td></tr>
+        <tr><td style="font-family:monospace;font-size:12px">RO20260805007</td><td>内部直充</td><td>金币</td><td style="font-size:12px">¥500 / 5000 / 赠0</td><td>内部直充</td><td>工作人员</td><td>${userTag('用户E','男','U005','135****8005')}</td><td>${badge('Lv6','info')}</td><td>${badge('支付成功','success')}</td><td style="font-size:12px;color:var(--ink-3)">运营补偿充值</td><td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">2026-08-05 17:30:08</td><td><button class="btn-action btn-action-view" onclick="showRechargeDetail('RO20260805007','内部直充','金币','500','5000','0','内部直充','工作人员','用户E','U005','135****8005','Lv6','支付成功','运营补偿充值','2026-08-05 17:30:08')">详情</button></td></tr>
       </tbody>
     </table>
     ${pagination()}
@@ -2855,7 +2825,6 @@ function showRechargeDetail(orderId, serviceType, rechargeType, rmbPrice, coinQt
     document.body.appendChild(overlay);
   }
   var statusType = status === '支付成功' ? 'success' : 'default';
-  var unit = rechargeType === '钻石' ? '钻石' : '金币';
   overlay.innerHTML = '<div class="approve-modal" style="width:520px">'
     + '<div class="approve-modal-header"><span>充值详情</span><button class="reject-modal-close" onclick="closeRechargeDetail()">&times;</button></div>'
     + '<div class="approve-modal-body">'
@@ -2864,7 +2833,8 @@ function showRechargeDetail(orderId, serviceType, rechargeType, rmbPrice, coinQt
     + '<tr><td style="color:var(--ink-3);padding:6px 0">充值服务类型</td><td style="padding:6px 0">' + serviceType + '</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">充值类型</td><td style="padding:6px 0">' + rechargeType + '（单一币种，防止多币种）</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">人民币定价</td><td style="padding:6px 0">¥' + rmbPrice + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">充值数量</td><td style="padding:6px 0">' + coinQty + ' ' + unit + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">充值金币数量</td><td style="padding:6px 0">' + coinQty + ' 金币</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">赠送数量</td><td style="padding:6px 0">' + bonusQty + ' 金币</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">支付方式</td><td style="padding:6px 0">' + payMethod + '</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">充值渠道</td><td style="padding:6px 0">' + channel + '</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">消费者昵称</td><td style="padding:6px 0">' + consumerName + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + consumerId + '</a></td></tr>'
@@ -2884,51 +2854,19 @@ function closeRechargeDetail() {
 }
 
 // --- Order Withdraw (提现记录) ---
-function withdrawSeedRows() {
-  return [
-    {merchantOrderNo:'WD20260813001',userName:'用户B',gender:'女',userId:'U002',userPhone:'139****8002',realName:'李雪',idCard:'410101199203150028',diamonds:'1,250',amount:125,status:'提现中',applyTime:'2026-08-13 14:30:00',remark:'APP提现申请'},
-    {merchantOrderNo:'WD20260813002',userName:'用户D',gender:'女',userId:'U004',userPhone:'136****8004',realName:'王倩',idCard:'310101199501010027',diamonds:'1,200',amount:120,status:'提现中',applyTime:'2026-08-13 09:15:00',remark:'APP提现申请'},
-    {merchantOrderNo:'WD20260811003',userName:'用户G',gender:'男',userId:'U007',userPhone:'133****8007',realName:'张伟',idCard:'440101199007120016',diamonds:'800',amount:80,status:'已提现',applyTime:'2026-08-11 15:30:00',thirdBatchId:'FP20260812001',thirdDetailId:'FPI003',fee:2.4,tax:0,bankCard:'6217********5678',thirdPhone:'133****8007',remark:'APP提现申请'},
-    {merchantOrderNo:'WD20260811002',userName:'用户E',gender:'男',userId:'U005',userPhone:'135****8005',realName:'刘洋',idCard:'110101199511220034',diamonds:'1,000',amount:100,status:'提现失败',applyTime:'2026-08-11 11:20:00',failureReason:'第三方实名认证信息不一致',thirdBatchId:'FP20260812001',thirdDetailId:'FPI002',fee:0,tax:0,remark:'APP提现申请'},
-    {merchantOrderNo:'WD20260809001',userName:'用户F',gender:'女',userId:'U006',userPhone:'134****8006',realName:'陈静',idCard:'330101199801050023',diamonds:'800',amount:80,status:'已提现',applyTime:'2026-08-09 16:45:00',thirdBatchId:'FP20260810001',thirdDetailId:'FPI001',fee:2.4,tax:0,bankCard:'6217********5432',thirdPhone:'134****8006',remark:'APP提现申请'},
-    {merchantOrderNo:'WD20260808001',userName:'用户A',gender:'男',userId:'U001',userPhone:'138****8001',realName:'赵磊',idCard:'210101199206180015',diamonds:'800',amount:80,status:'已提现',applyTime:'2026-08-08 10:05:00',thirdBatchId:'FP20260809001',thirdDetailId:'FPI001',fee:2.4,tax:0,bankCard:'6222********4332',thirdPhone:'138****8001',remark:'APP提现申请'},
-    {merchantOrderNo:'WD20260805002',userName:'用户H',gender:'男',userId:'U008',userPhone:'132****8008',realName:'孙强',idCard:'500101199709300019',diamonds:'600',amount:60,status:'提现失败',applyTime:'2026-08-05 14:50:00',failureReason:'第三方账户未完成认证',thirdBatchId:'FP20260806001',thirdDetailId:'FPI004',fee:0,tax:0,remark:'APP提现申请'},
-    {merchantOrderNo:'WD20260804001',userName:'用户C',gender:'男',userId:'U003',userPhone:'137****8003',realName:'周明',idCard:'610101199404250012',diamonds:'500',amount:50,status:'已提现',applyTime:'2026-08-04 09:15:00',thirdBatchId:'FP20260805001',thirdDetailId:'FPI002',fee:1.5,tax:0,bankCard:'6225********2109',thirdPhone:'137****8003',remark:'APP提现申请'}
-  ];
-}
-function mapWithdrawPayoutStatus(status) {
-  if(status === '打款完成') return '已提现';
-  if(status === '交易失败') return '提现失败';
-  return '提现中';
-}
-function applyWithdrawImportRows(importRows) {
-  var result = {success:0,failed:0,unmatched:0,total:importRows.length};
-  importRows.forEach(function(item) {
-    var row = (window._wdRows || []).find(function(r){ return r.merchantOrderNo === item.merchantOrderNo; });
-    if(!row) { result.unmatched++; return; }
-    var status = mapWithdrawPayoutStatus(item.payoutStatus);
-    row.status = status;
-    row.failureReason = status === '提现失败' ? (item.payoutLog || '第三方未返回失败原因') : '';
-    row.tax = item.tax || 0; row.fee = item.fee || 0;
-    row.thirdBatchId = item.batchId || ''; row.thirdDetailId = item.detailId || '';
-    row.bankCard = item.bankCard ? String(item.bankCard).replace(/^(\d{4}).*(\d{4})$/, '$1********$2') : '';
-    row.thirdPhone = item.thirdPhone ? String(item.thirdPhone).replace(/^(\d{3}).*(\d{4})$/, '$1****$2') : '';
-    if(status === '已提现') result.success++; else if(status === '提现失败') result.failed++;
-  });
-  return result;
-}
-function buildWithdrawExportRows(rows) {
-  var note = '1、打款金额必须保留两位小数，否则打款可能会出现失败！\n2、打款数据以身份证号为准，平台会通过身份证号关联出实名认证的银行卡四要素！\n3、单条打款金额不要大于等于4.9万，超过的请拆分成多条\n本行勿删！！！';
-  var headers = ['收款户名(真实姓名，必填)','身份证号(必填)','打款金额(元，必填)','商户订单号(非必填)','打款备注(非必填)'];
-  var data = (rows || []).filter(function(r){ return r.status === '提现中'; }).map(function(r){
-    return [r.realName,r.idCard,Number(r.amount).toFixed(2),r.merchantOrderNo,r.remark || 'APP提现申请'];
-  });
-  return [[note,'','','',''],headers].concat(data);
-}
 PAGES['order-withdraw'] = function() {
-  // 提现申请与第三方打款结果，以商户订单号作为唯一匹配键
-  if(!window._wdRows) window._wdRows = withdrawSeedRows();
-  var wdRows = window._wdRows;
+  // [提现单号, 申请人昵称, 性别, 用户ID, 手机号, 姓名, 身份证号, 提现钻石, 到账金额, 银行卡号, 申请时间]
+  var wdRows = [
+    ['WD20260813001','用户B','女','U002','139****8002','李雪','410101199203150028','1,250','¥125.00','6222020200112233445','2026-08-13 14:30:00'],
+    ['WD20260813002','用户D','女','U004','136****8004','王倩','310101199501010027','1,200','¥120.00','6225880123456789','2026-08-13 09:15:00'],
+    ['WD20260811003','用户G','男','U007','133****8007','张伟','440101199007120016','800','¥80.00','6217003810012345678','2026-08-11 15:30:00'],
+    ['WD20260811002','用户E','男','U005','135****8005','刘洋','110101199511220034','1,000','¥100.00','6222020200119988776','2026-08-11 11:20:00'],
+    ['WD20260809001','用户F','女','U006','134****8006','陈静','330101199801050023','800','¥80.00','6217003810018765432','2026-08-09 16:45:00'],
+    ['WD20260808001','用户A','男','U001','138****8001','赵磊','210101199206180015','800','¥80.00','6222020200115544332','2026-08-08 10:05:00'],
+    ['WD20260805002','用户H','男','U008','132****8008','孙强','500101199709300019','600','¥60.00','6228480402564890018','2026-08-05 14:50:00'],
+    ['WD20260804001','用户C','男','U003','137****8003','周明','610101199404250012','500','¥50.00','6225880198765432109','2026-08-04 09:15:00'],
+  ];
+  window._wdRows = wdRows;
   window._wdFiltered = wdRows;
   // 从概览"今日提现"卡片进入时，自动按当天筛选
   var today = '2026-08-13';
@@ -2938,28 +2876,33 @@ PAGES['order-withdraw'] = function() {
     window._pendingFilter = null;
     initStart = today;
     initEnd = today;
-    initRows = wdRows.filter(function(r){ return String(r.applyTime).indexOf(today) === 0; });
+    initRows = wdRows.filter(function(r){ return String(r[10]).indexOf(today) === 0; });
   }
   return `
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
     <div>
       <div class="page-title">提现记录</div>
-      <div class="page-desc">APP提交提现申请后导出至第三方平台放款，再按商户订单号导入结果并同步APP状态</div>
+      <div class="page-desc">查看用户提现记录，支持导出Excel进行线下打款</div>
     </div>
   </div>
+  <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat-card blue"><div class="num">2</div><div class="label">今日提现</div></div>
+    <div class="stat-card green"><div class="num">12</div><div class="label">本月提现</div></div>
+    <div class="stat-card purple"><div class="num">156</div><div class="label">累计提现</div></div>
+  </div>
   <div class="filter-bar">
-    <input id="wd-no" placeholder="商户订单号">
+    <input id="wd-no" placeholder="提现单号">
     <input id="wd-user" placeholder="申请人昵称/ID/手机号">
-    <select id="wd-status"><option value="">全部状态</option><option>提现中</option><option>已提现</option><option>提现失败</option></select>
+    <input id="wd-name" placeholder="姓名">
+    <input id="wd-idcard" placeholder="身份证号">
     <input type="date" id="wd-start" value="${initStart}"> <span style="color:var(--ink-3)">~</span> <input type="date" id="wd-end" value="${initEnd}">
     <button class="btn btn-primary btn-sm" onclick="applyWithdrawFilter()">搜索</button>
     <button class="btn btn-default btn-sm" onclick="resetWithdrawFilter()">重置</button>
-    <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="exportWithdrawExcel()">导出费用发放模板</button>
-    <button class="btn btn-primary btn-sm" style="background:var(--purple)" onclick="showWithdrawImportModal()">导入打款明细</button>
+    <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="exportWithdrawExcel()">导出Excel</button>
   </div>
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>商户订单号</th><th>申请人</th><th>身份证号</th><th>提现钻石</th><th>打款金额</th><th>状态</th><th>申请时间</th><th>操作</th></tr></thead>
+      <thead><tr><th>提现单号</th><th>申请人</th><th>姓名</th><th>身份证号</th><th>提现钻石</th><th>到账金额</th><th>银行卡号</th><th>申请时间</th><th>操作</th></tr></thead>
       <tbody id="wd-tbody">
         ${initRows.map(wdRowHtml).join('')}
       </tbody>
@@ -2969,40 +2912,49 @@ PAGES['order-withdraw'] = function() {
 };
 function wdRowHtml(r) {
   return `<tr>
-    <td style="font-family:monospace;font-size:12px">${r.merchantOrderNo}</td>
-    <td>${userTag(r.userName,r.gender,r.userId,r.userPhone)}</td><td style="font-family:monospace;font-size:12px">${r.idCard || '—'}</td>
-    <td>${r.diamonds}</td><td style="font-weight:600">¥${Number(r.amount).toFixed(2)}</td>
-    <td>${badge(r.status,r.status==='已提现'?'success':r.status==='提现失败'?'danger':'warning')}</td>
-    <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r.applyTime}</td>
-    <td><button class="btn-action btn-action-view" onclick="showWithdrawDetail('${r.merchantOrderNo}')">详情</button></td>
+    <td style="font-family:monospace;font-size:12px">${r[0]}</td>
+    <td>${userTag(r[1],r[2],r[3],r[4])}</td>
+    <td style="font-weight:600">${r[5]}</td>
+    <td style="font-family:monospace;font-size:12px">${r[6]}</td>
+    <td>${r[7]}</td>
+    <td style="font-weight:600">${r[8]}</td>
+    <td style="font-family:monospace;font-size:12px">${r[9]}</td>
+    <td style="white-space:nowrap;font-family:monospace;font-size:12px;color:var(--ink-2)">${r[10]}</td>
+    <td><button class="btn-action btn-action-view" onclick="showWithdrawDetail('${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}','${r[9]}','${r[10]}')">详情</button></td>
   </tr>`;
 }
 function applyWithdrawFilter() {
   var no = document.getElementById('wd-no');
   var user = document.getElementById('wd-user');
-  var statusEl = document.getElementById('wd-status');
+  var nameEl = document.getElementById('wd-name');
+  var idcardEl = document.getElementById('wd-idcard');
+  var channel = document.getElementById('wd-channel');
   var start = document.getElementById('wd-start');
   var end = document.getElementById('wd-end');
   var kwNo = no ? no.value.trim() : '';
   var kwUser = user ? user.value.trim() : '';
-  var status = statusEl ? statusEl.value : '';
+  var kwName = nameEl ? nameEl.value.trim() : '';
+  var kwIdCard = idcardEl ? idcardEl.value.trim() : '';
+  var kwCh = channel ? channel.value : '';
   var s = start ? start.value : '';
   var e = end ? end.value : '';
   var rows = (window._wdRows || []).filter(function(r) {
-    if (kwNo && r.merchantOrderNo.indexOf(kwNo) === -1) return false;
-    if (kwUser && String(r.userName + r.userId + r.userPhone).indexOf(kwUser) === -1) return false;
-    if (status && r.status !== status) return false;
-    var d = String(r.applyTime).slice(0, 10);
+    if (kwNo && String(r[0]).indexOf(kwNo) === -1) return false;
+    if (kwUser && String(r[1] + r[3] + r[4] + r[5]).indexOf(kwUser) === -1) return false;
+    if (kwName && String(r[5]).indexOf(kwName) === -1) return false;
+    if (kwIdCard && String(r[6]).indexOf(kwIdCard) === -1) return false;
+    if (kwCh && r[11] !== kwCh) return false;
+    var d = String(r[12]).slice(0, 10);
     if (s && d < s) return false;
     if (e && d > e) return false;
     return true;
   });
   window._wdFiltered = rows;
   var tb = document.getElementById('wd-tbody');
-  if (tb) tb.innerHTML = rows.map(wdRowHtml).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--ink-3);padding:20px">未找到符合条件的提现记录</td></tr>';
+  if (tb) tb.innerHTML = rows.map(wdRowHtml).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--ink-3);padding:20px">未找到符合条件的提现记录</td></tr>';
 }
 function resetWithdrawFilter() {
-  ['wd-no','wd-user','wd-status','wd-start','wd-end'].forEach(function(id) {
+  ['wd-no','wd-user','wd-name','wd-idcard','wd-channel','wd-start','wd-end'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -3010,9 +2962,7 @@ function resetWithdrawFilter() {
   var tb = document.getElementById('wd-tbody');
   if (tb) tb.innerHTML = (window._wdRows || []).map(wdRowHtml).join('');
 }
-function showWithdrawDetail(orderId) {
-  var r = (window._wdRows || []).find(function(item){ return item.merchantOrderNo === orderId; });
-  if(!r) return;
+function showWithdrawDetail(orderId, userName, gender, userId, userPhone, realName, idCard, diamonds, amount, bankCard, applyTime) {
   var overlay = document.getElementById('withdraw-detail-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -3024,24 +2974,23 @@ function showWithdrawDetail(orderId) {
     + '<div class="approve-modal-header"><span>提现详情</span><button class="reject-modal-close" onclick="closeWithdrawDetail()">&times;</button></div>'
     + '<div class="approve-modal-body">'
     + '<table style="width:100%;font-size:13px;border-collapse:collapse">'
-    + '<tr><td style="color:var(--ink-3);width:120px;padding:6px 0">商户订单号</td><td style="font-family:monospace;padding:6px 0">' + r.merchantOrderNo + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">申请人</td><td style="padding:6px 0">' + r.userName + '(' + r.gender + ') · ' + r.userId + ' · ' + r.userPhone + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">提现状态</td><td>' + badge(r.status,r.status==='已提现'?'success':r.status==='提现失败'?'danger':'warning') + ' <span style="font-size:12px;color:var(--ink-3)">已同步APP</span></td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">提现钻石</td><td style="padding:6px 0">' + r.diamonds + ' 钻石</td></tr>'
+    + '<tr><td style="color:var(--ink-3);width:120px;padding:6px 0">提现单号</td><td style="font-family:monospace;padding:6px 0">' + orderId + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">申请人</td><td style="padding:6px 0">' + userName + '(' + gender + ') <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + userId + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + userPhone + '</span></td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">姓名</td><td style="padding:6px 0">' + realName + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">身份证号</td><td style="font-family:monospace;padding:6px 0">' + idCard + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">提现钻石</td><td style="padding:6px 0">' + diamonds + ' 钻石</td></tr>'
     + '<tr><td style="color:var(--ink-3);padding:6px 0">钻石兑换比例</td><td style="padding:6px 0">10% <span style="font-size:12px;color:var(--ink-3)">（按提现设置）</span></td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">打款金额</td><td style="font-weight:600;padding:6px 0">¥' + Number(r.amount).toFixed(2) + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">申请时间</td><td style="font-family:monospace;padding:6px 0">' + r.applyTime + '</td></tr>'
-    + '<tr><td style="color:var(--ink-3);padding:6px 0">身份证号</td><td style="font-family:monospace">' + (r.idCard || '—') + '</td></tr>'
-    + (r.failureReason ? '<tr><td style="color:var(--ink-3);padding:6px 0">失败原因</td><td style="color:var(--red)">' + r.failureReason + '</td></tr>' : '')
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">到账金额</td><td style="font-weight:600;padding:6px 0">' + amount + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">银行卡号</td><td style="font-family:monospace;padding:6px 0">' + bankCard + '</td></tr>'
+    + '<tr><td style="color:var(--ink-3);padding:6px 0">申请时间</td><td style="font-family:monospace;padding:6px 0">' + applyTime + '</td></tr>'
     + '</table>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-default" onclick="closeWithdrawDetail()">关闭</button></div></div>';
   overlay.classList.add('show');
 }
 function exportToExcel(filename, headers, rows) {
-  var quoteExcelCell = function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; };
-  var csv = '\ufeff' + headers.map(quoteExcelCell).join(',') + '\n' + rows.map(function(r){
-    return r.map(quoteExcelCell).join(',');
+  var csv = '\ufeff' + headers.join(',') + '\n' + rows.map(function(r){
+    return r.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
   }).join('\n');
   var blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8' });
   var a = document.createElement('a');
@@ -3053,40 +3002,12 @@ function exportToExcel(filename, headers, rows) {
   setTimeout(function(){ URL.revokeObjectURL(a.href); }, 200);
 }
 function exportWithdrawExcel() {
-  var rows = buildWithdrawExportRows(window._wdFiltered || window._wdRows || []);
-  if(rows.length === 2) { showTagToast('当前筛选结果中没有“提现中”记录', 'error'); return; }
-  exportToExcel('费用发放模版-' + new Date().getTime(), rows[0], rows.slice(1));
+  var headers = ['提现单号','申请人昵称','性别','用户ID','手机号','姓名','身份证号','提现钻石','到账金额','银行卡号','申请时间'];
+  var rows = (window._wdFiltered || window._wdRows || []).map(function(r){
+    return [r[0],r[1],r[2],r[3],r[4],r[5],'="' + r[6] + '"',r[7],r[8],'="' + r[9] + '"',r[10]];
+  });
+  exportToExcel('提现记录', headers, rows);
 }
-function withdrawImportDemoRows() {
-  return [
-    {merchantOrderNo:'WD20260813001',payoutStatus:'打款完成',payoutLog:'',tax:0,fee:3.75,batchId:'FP20260814001',detailId:'FPI001',bankCard:'6222020200112233445',thirdPhone:'13900008002'},
-    {merchantOrderNo:'WD20260813002',payoutStatus:'交易失败',payoutLog:'第三方实名认证信息不一致',tax:0,fee:0,batchId:'FP20260814001',detailId:'FPI002',bankCard:'',thirdPhone:''},
-    {merchantOrderNo:'WD-NOT-FOUND',payoutStatus:'打款完成',payoutLog:'',tax:0,fee:1.5,batchId:'FP20260814001',detailId:'FPI003',bankCard:'',thirdPhone:''}
-  ];
-}
-function showWithdrawImportModal() {
-  var overlay = document.getElementById('withdraw-import-overlay');
-  if(!overlay){ overlay=document.createElement('div'); overlay.id='withdraw-import-overlay'; overlay.className='approve-overlay'; document.body.appendChild(overlay); }
-  window._wdImportRows = [];
-  overlay.innerHTML='<div class="approve-modal" style="width:640px"><div class="approve-modal-header"><span>导入第三方打款明细</span><button class="reject-modal-close" onclick="closeWithdrawImport()">&times;</button></div><div class="approve-modal-body">'
-    + '<div style="background:var(--primary-light);padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.7;margin-bottom:12px">按“商户订单号”匹配提现记录。第三方“打款完成”更新为“已提现”，“交易失败”更新为“提现失败”，并同步APP。</div>'
-    + '<input type="file" class="form-input" accept=".xlsx,.xls,.csv" onchange="stageWithdrawImportFile(this)"><div id="wd-import-preview" style="margin-top:12px;color:var(--ink-2);font-size:13px">请选择第三方导出的“打款明细列表”。</div></div>'
-    + '<div class="approve-modal-footer"><button class="btn btn-default" onclick="stageWithdrawImportFile(null)">加载示例数据</button><button class="btn btn-primary" onclick="confirmWithdrawImport()">确认导入</button><button class="btn btn-default" onclick="closeWithdrawImport()">取消</button></div></div>';
-  overlay.classList.add('show');
-}
-function stageWithdrawImportFile(input) {
-  window._wdImportRows = withdrawImportDemoRows();
-  var el=document.getElementById('wd-import-preview'); if(!el) return;
-  var name=input&&input.files&&input.files[0]?input.files[0].name:'打款明细列表示例.xlsx';
-  el.innerHTML='<b>'+name+'</b><div style="margin-top:8px">识别 3 条：预计已提现 1 条、提现失败 1 条、未匹配 1 条。</div><div style="margin-top:6px;color:var(--orange)">未匹配记录不会修改后台数据。</div>';
-}
-function confirmWithdrawImport() {
-  if(!window._wdImportRows || !window._wdImportRows.length){ showTagToast('请先选择或加载打款明细', 'error'); return; }
-  var r=applyWithdrawImportRows(window._wdImportRows); closeWithdrawImport();
-  showTagToast('导入完成：已提现 '+r.success+' 条，提现失败 '+r.failed+' 条，未匹配 '+r.unmatched+' 条；状态已同步APP','success');
-  navigate('order-withdraw','提现记录');
-}
-function closeWithdrawImport(){ var o=document.getElementById('withdraw-import-overlay'); if(o)o.classList.remove('show'); }
 function closeWithdrawDetail() {
   var overlay = document.getElementById('withdraw-detail-overlay');
   if (overlay) overlay.classList.remove('show');
@@ -3105,20 +3026,18 @@ PAGES['withdraw-setting'] = function() {
       <div class="config-row"><span class="config-label">钻石兑换比例</span><input class="form-input" style="max-width:110px" value="10"> <span style="font-size:12px;color:var(--ink-3)">%（提现钻石 × 此比例 = 到账金额，小数位向下取整；如提现 1,250 钻石，按 10% 到账 125 元）</span></div>
       <div class="config-row"><span class="config-label">提现扣除钻石规则</span><span style="font-size:13px;color:var(--ink-2)">提现扣除钻石须为</span><input class="form-input" id="withdraw-multiple-input" style="max-width:90px;text-align:center" value="10"><span style="font-size:13px;color:var(--ink-2)">的倍数</span><span style="font-size:12px;color:var(--ink-3)">（自定义数值，填 1 表示不限倍数）</span></div>
       <div class="config-row" style="align-items:flex-start"><span class="config-label">温馨提示</span><div style="flex:1;max-width:520px">
-        <textarea class="form-textarea" id="withdraw-tip-input" style="width:100%;max-width:520px;min-height:72px" oninput="document.getElementById('withdraw-tip-preview').textContent=this.value">提交提现申请后状态为“提现中”。银行卡及收款认证请前往第三方平台完成；放款结果返回后，APP将更新为“已提现”或“提现失败”。</textarea>
+        <textarea class="form-textarea" id="withdraw-tip-input" style="width:100%;max-width:520px;min-height:72px" oninput="document.getElementById('withdraw-tip-preview').textContent=this.value">提现申请将于 1-3 个工作日内处理，节假日顺延；请确保收款信息填写准确，如有疑问请联系在线客服。</textarea>
         <div style="font-size:12px;color:var(--ink-3);margin-top:6px">该提示将展示在前台「我的 → 钱包 → 提现」页面，用于向用户说明提现处理时效</div>
         <div style="font-size:12px;color:var(--ink-3);margin:14px 0 6px">前台展示效果：</div>
-        <div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink-2);line-height:1.7"><span style="color:var(--primary);font-weight:600">温馨提示：</span><span id="withdraw-tip-preview">提交提现申请后状态为“提现中”。银行卡及收款认证请前往第三方平台完成；放款结果返回后，APP将更新为“已提现”或“提现失败”。</span></div>
+        <div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink-2);line-height:1.7"><span style="color:var(--primary);font-weight:600">温馨提示：</span><span id="withdraw-tip-preview">提现申请将于 1-3 个工作日内处理，节假日顺延；请确保收款信息填写准确，如有疑问请联系在线客服。</span></div>
       </div></div>
     </div>
   </div>
   <div class="card">
-    <div class="card-title">第三方平台放款流程</div>
+    <div class="card-title">线下打款说明</div>
     <div style="background:var(--primary-light);border-radius:8px;padding:12px;font-size:13px;color:var(--ink-2);line-height:1.8">
-      1. APP提交提现申请，后台生成唯一商户订单号，状态为“提现中”。<br>
-      2. 管理员导出“费用发放模板”，上传至第三方平台完成认证及放款。<br>
-      3. 从第三方平台导出“打款明细列表”，导入后台并按商户订单号匹配。<br>
-      <span style="color:var(--orange)">导入后，“打款完成”更新为“已提现”，“交易失败”更新为“提现失败”，并同步到APP。</span>
+      当前提现模式为线下手动处理，无需对接银行接口。管理员可在「提现记录」页面导出Excel表格，按批次线下打款后手动更新提现状态。<br>
+      <span style="color:var(--orange)">注意：提现记录状态变更需在提现记录页面操作，不支持自动回调。</span>
     </div>
   </div>
   <div style="margin-top:16px"><button class="btn btn-primary">保存设置</button></div>`;
@@ -3143,8 +3062,8 @@ PAGES['ranking'] = function() {
       <div class="tab" onclick="switchTab(this,'panel-cp')">CP榜</div>
     </div>
     <div class="filter-bar">
-      <select id="rank-period" onchange="updateRankPeriod(this.value)"><option>日榜</option><option>周榜</option><option>月榜</option><option>自定义时间</option></select>
-      <span style="display:inline-flex;align-items:center;gap:6px"><input type="date" id="rank-start-date" class="form-input" style="width:145px" value="2026-08-13"><span style="color:var(--ink-3)">至</span><input type="date" id="rank-end-date" class="form-input" style="width:145px" value="2026-08-13"></span>
+      <select><option>日榜</option><option>周榜</option><option>月榜</option></select>
+      <select><option>今日</option><option>昨日</option><option>自定义</option></select>
       <span style="font-size:12px;color:var(--ink-3);margin-left:auto">仅展示前 30 位，前三特殊展示</span>
     </div>
     <div id="panel-shenhao" class="tab-panel active">
@@ -3158,7 +3077,7 @@ PAGES['ranking'] = function() {
     <div id="panel-xindong" class="tab-panel">
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>排名</th><th>用户</th><th>会员等级</th><th>魅力值 <span title="魅力值：用户通过收礼、通话等行为获得的综合影响力分值" style="display:inline-block;width:16px;height:16px;border:1px solid var(--ink-3);border-radius:50%;font-size:11px;line-height:15px;text-align:center;color:var(--ink-3);cursor:help">?</span></th></tr></thead>
+          <thead><tr><th>排名</th><th>用户</th><th>会员等级</th><th>魅力值</th></tr></thead>
           <tbody>${xindong.map(function(r, i){ return '<tr><td style="font-size:15px;font-weight:700">' + medal(i) + r[0] + '</td><td>' + rankUser(r[1], r[2], r[3]) + '</td><td>' + r[4] + '</td><td>' + r[5] + '</td></tr>'; }).join('')}</tbody>
         </table>
       </div>
@@ -3166,7 +3085,7 @@ PAGES['ranking'] = function() {
     <div id="panel-cp" class="tab-panel">
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>排名</th><th>用户A</th><th>用户B</th><th>亲密值 <span title="亲密值：两位用户之间通过互动累计形成的关系分值" style="display:inline-block;width:16px;height:16px;border:1px solid var(--ink-3);border-radius:50%;font-size:11px;line-height:15px;text-align:center;color:var(--ink-3);cursor:help">?</span></th></tr></thead>
+          <thead><tr><th>排名</th><th>用户A</th><th>用户B</th><th>亲密值</th></tr></thead>
           <tbody>${cp.map(function(r, i){ return '<tr><td style="font-size:15px;font-weight:700">' + medal(i) + r[0] + '</td><td>' + rankUser(r[1], r[2], r[3]) + '</td><td>' + rankUser(r[4], r[5], r[6]) + '</td><td>' + r[7] + '</td></tr>'; }).join('')}</tbody>
         </table>
       </div>
@@ -3179,15 +3098,6 @@ PAGES['ranking'] = function() {
     <div style="margin-top:12px"><button class="btn btn-primary">保存</button></div>
   </div>`;
 };
-
-function updateRankPeriod(period) {
-  var start = document.getElementById('rank-start-date');
-  var end = document.getElementById('rank-end-date');
-  if (!start || !end || period === '自定义时间') return;
-  if (period === '日榜') { start.value = '2026-08-13'; end.value = '2026-08-13'; }
-  if (period === '周榜') { start.value = '2026-08-07'; end.value = '2026-08-13'; }
-  if (period === '月榜') { start.value = '2026-08-01'; end.value = '2026-08-31'; }
-}
 
 // --- Market Signin ---
 PAGES['market-signin'] = function() {
@@ -3508,12 +3418,13 @@ PAGES['risk-report'] = function() {
   var rows = reportRows;
   return `
   <div class="page-title">举报信息</div>
-  <div class="page-desc">查看用户举报信息，处理请进入被举报人的会员详情</div>
+  <div class="page-desc">查看和处理用户举报</div>
   <div class="card">
     <div class="filter-bar" style="flex-wrap:wrap">
       <input class="form-input" style="width:180px" placeholder="举报人昵称/ID/手机号">
       <input class="form-input" style="width:180px" placeholder="被举报人昵称/ID/手机号">
       <select><option>所有举报类型</option><option>色情低俗</option><option>广告骚扰</option><option>欺诈骗钱</option><option>侮辱谩骂</option><option>违法犯罪</option><option>其他</option></select>
+      <select><option>所有状态</option><option>待处理</option><option>已处理</option></select>
       <input type="date" class="form-input" style="width:140px" value="2026-08-01">
       <span style="color:var(--ink-3)">至</span>
       <input type="date" class="form-input" style="width:140px" value="2026-08-11">
@@ -3523,15 +3434,19 @@ PAGES['risk-report'] = function() {
   </div>
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>工单ID</th><th>举报人</th><th>被举报人</th><th>举报类型</th><th>时间</th><th>备注说明</th><th>操作</th></tr></thead>
+      <thead><tr><th>工单ID</th><th>举报人</th><th>被举报人</th><th>举报类型</th><th>时间</th><th>状态</th><th>处理说明</th><th>操作</th></tr></thead>
       <tbody>${rows.map(function(r, i){
         var reportUser = avatar(r[1]) + ' ' + r[1] + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + r[2] + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + r[3] + '</span>';
         var reportedUser = avatar(r[6]) + ' ' + r[6] + ' <a href="javascript:navigate(\'member-detail\',\'会员详情\')" style="color:var(--primary);font-size:12px">' + r[7] + '</a> <span style="font-size:12px;color:var(--ink-3);font-family:monospace">' + r[8] + '</span>';
         var status = r[11];
         var statusColor = status === '待处理' ? 'warning' : 'success';
         var operations = '';
-        operations = '<button class="btn-action btn-action-view" onclick="handleReport(\'' + r[0] + '\',\'view\')">查看详情</button> <button class="btn-action btn-action-edit" onclick="navigate(\'member-detail\',\'会员详情\')">会员详情处理</button>';
-        return '<tr><td style="font-family:monospace">' + r[0] + '</td><td>' + reportUser + '</td><td>' + reportedUser + '</td><td>' + r[10] + '</td><td>' + r[9] + '</td><td>' + (r[12] || '—') + '</td><td>' + operations + '</td></tr>';
+        if(status === '待处理') {
+          operations = '<button class="btn-action btn-action-edit" onclick="handleReport(\'' + r[0] + '\',\'process\')">开始处理</button> <button class="btn-action btn-action-view" onclick="handleReport(\'' + r[0] + '\',\'view\')">详情</button>';
+        } else {
+          operations = '<button class="btn-action btn-action-view" onclick="handleReport(\'' + r[0] + '\',\'view\')">详情</button>';
+        }
+        return '<tr><td style="font-family:monospace">' + r[0] + '</td><td>' + reportUser + '</td><td>' + reportedUser + '</td><td>' + r[10] + '</td><td>' + r[9] + '</td><td>' + badge(status, statusColor) + '</td><td>' + (r[12] || '—') + '</td><td>' + operations + '</td></tr>';
       }).join('')}</tbody>
     </table>
     ${pagination()}
@@ -3581,20 +3496,16 @@ function showReportDetail(id) {
     + '</div>'
     + '<div style="margin-bottom:16px"><strong style="color:var(--ink-1)">举报类型：</strong> ' + reportData[10] + '</div>'
     + '<div style="margin-bottom:16px"><strong style="color:var(--ink-1)">举报时间：</strong> ' + reportData[9] + '</div>'
+    + '<div style="margin-bottom:16px"><strong style="color:var(--ink-1)">处理状态：</strong> ' + badge(status, statusColor) + '</div>'
     + '<div style="margin-bottom:16px"><strong style="color:var(--ink-1)">问题描述：</strong><div style="background:var(--bg);padding:12px;border-radius:6px;margin-top:4px;font-size:13px">该用户在视频聊天中存在不当行为，涉及色情内容</div></div>'
     + '<div style="margin-bottom:16px"><strong style="color:var(--ink-1)">上传凭证：</strong><div style="display:flex;gap:8px;margin-top:4px"><div style="width:60px;height:60px;background:var(--primary-light);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:12px">图1</div><div style="width:60px;height:60px;background:var(--primary-light);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:12px">图2</div></div></div>'
-    + '<div style="margin-bottom:16px"><strong style="color:var(--ink-1)">备注说明：</strong><div style="background:var(--bg);padding:12px;border-radius:6px;margin-top:4px;font-size:13px">' + (reportData[12] || '—') + '</div></div>'
+    + '<div style="margin-bottom:16px"><strong style="color:var(--ink-1)">处理备注：</strong><div style="background:var(--bg);padding:12px;border-radius:6px;margin-top:4px;font-size:13px">' + (reportData[12] || '—') + '</div></div>'
     
     + '</div>'
     + '<div class="approve-modal-footer">'
-    + '<button class="btn btn-primary" onclick="saveReportRemark(\'' + id + '\')">保存</button> '
-    + (status === '待处理' ? '<button class="btn btn-primary" onclick="navigate(\'member-detail\',\'会员详情\');closeReportDetail()">进入会员详情处理</button> ' : '')
+    + (status === '待处理' ? '<button class="btn btn-primary" onclick="handleReport(\'' + id + '\',\'process\')">开始处理</button> ' : '')
     + '<button class="btn btn-default" onclick="closeReportDetail()">关闭</button></div></div>';
   overlay.classList.add('show');
-}
-
-function saveReportRemark(id) {
-  alert('举报备注已保存');
 }
 
 function showReportProcess(id) {
@@ -4117,7 +4028,7 @@ function clearRateSetting(uid) {
 
 // --- Service FAQ ---
 PAGES['service-faq'] = function() {
-  var rows = [['F001','如何充值金币？','<p>进入<b>个人中心</b> → 点击「<span style="color:#1677ff">充值中心</span>」→ 选择充值档位并完成支付，金币将<u>实时到账</u>。</p><ul><li>支持微信 / 支付宝支付</li><li>到账后可前往钱包查看余额</li></ul>','账户充值','已上架','2026-08-01 10:30'],['F002','如何提现？','<p>进入<b>钱包</b> → 「<span style="color:#1677ff">提现</span>」→ 填写提现钻石数量并提交。APP内无需绑定银行卡，收款认证请前往第三方平台完成。</p><blockquote>状态说明：提交后为“提现中”，放款后更新为“已提现”或“提现失败”。</blockquote>','提现说明','已上架','2026-08-02 14:20'],['F003','黑名单怎么解除？','<p>联系客服，按提示提交申诉材料，审核通过后自动解除。</p><p><b>申诉材料：</b>账号信息 + 问题说明</p>','账号问题','已下架','2026-08-03 09:15'],['F004','充值未到账？','<p>请提供<b>订单号</b>与支付截图，客服将在 1-3 个工作日内核实处理。</p>','充值问题','已上架','2026-08-05 16:45']];
+  var rows = [['F001','如何充值金币？','进入个人中心，选择充值档位完成支付，金币实时到账，支持微信/支付宝。','<p>进入<b>个人中心</b> → 点击「<span style="color:#1677ff">充值中心</span>」→ 选择充值档位并完成支付，金币将<u>实时到账</u>。</p><ul><li>支持微信 / 支付宝支付</li><li>到账后可前往钱包查看余额</li></ul>','账户充值','已上架','2026-08-01 10:30'],['F002','如何提现？','进入钱包绑定银行卡后填写提现钻石数量并提交，工作日处理，节假日顺延。','<p>进入<b>钱包</b> → 「<span style="color:#1677ff">提现</span>」→ 绑定银行卡后填写提现钻石数量（须为 10 的倍数），提交后按流程打款。</p><blockquote>提示：工作日处理，节假日顺延。</blockquote>','提现说明','已上架','2026-08-02 14:20'],['F003','黑名单怎么解除？','联系客服提交账号信息和问题说明等申诉材料，审核通过后自动解除。','<p>联系客服，按提示提交申诉材料，审核通过后自动解除。</p><p><b>申诉材料：</b>账号信息 + 问题说明</p>','账号问题','已下架','2026-08-03 09:15'],['F004','充值未到账？','提供订单号与支付截图，客服将在 1-3 个工作日内核实处理。','<p>请提供<b>订单号</b>与支付截图，客服将在 1-3 个工作日内核实处理。</p>','充值问题','已上架','2026-08-05 16:45']];
   var cats = [['C001','账户充值','启用','2026-08-01 10:30'],['C002','提现说明','启用','2026-08-02 09:20'],['C003','账号问题','启用','2026-08-03 14:10'],['C004','充值问题','启用','2026-08-04 11:05'],['C005','其他','禁用','2026-08-05 16:40']];
   window._faqRows = rows;
   window._faqCats = cats;
@@ -4141,7 +4052,7 @@ PAGES['service-faq'] = function() {
       </div>
       <div class="table-wrapper" style="box-shadow:none">
         <table>
-          <thead><tr><th>编号</th><th>问题</th><th>答案</th><th>分类</th><th>排序</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+          <thead><tr><th>编号</th><th>问题</th><th>概述</th><th>分类</th><th>排序</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
           <tbody id="faq-tbody">${(window._faqRows || rows).map(faqRowHtml).join('')}</tbody>
         </table>
         ${pagination()}
@@ -4180,9 +4091,9 @@ function switchFaqTab(tab) {
   if(panelCat) panelCat.style.display = tab === 'cat' ? 'block' : 'none';
 }
 
-// FAQ 行渲染（答案列渲染富文本 HTML）
+// FAQ 行渲染（列表显示概述，不显示答案）
 function faqRowHtml(r, i) {
-  return `<tr><td>${r[0]}</td><td style="max-width:180px;font-weight:600">${r[1]}</td><td style="max-width:250px"><div class="faq-answer-cell">${r[2]}</div></td><td>${badge(r[3],'info')}</td><td>${i+1}</td><td>${badge(r[4], r[4]==='已上架'?'success':'default')}</td><td style="font-family:monospace;font-size:12px">${r[5]}</td><td><button class="btn-action btn-action-edit" onclick="showFaqModal('edit',${i})">编辑</button> <button class="btn-action btn-action-view" onclick="showFaqStatusModal(${i})">${r[4]==='已上架'?'下架':'上架'}</button> <button class="btn-action btn-action-ban" onclick="showFaqDeleteModal(${i})">删除</button></td></tr>`;
+  return `<tr><td>${r[0]}</td><td style="max-width:180px;font-weight:600">${r[1]}</td><td style="max-width:250px"><div class="faq-summary-cell" title="${r[2].replace(/"/g,'&quot;')}">${r[2]}</div></td><td>${badge(r[4],'info')}</td><td>${i+1}</td><td>${badge(r[5], r[5]==='已上架'?'success':'default')}</td><td style="font-family:monospace;font-size:12px">${r[6]}</td><td><button class="btn-action btn-action-edit" onclick="showFaqModal('edit',${i})">编辑</button> <button class="btn-action btn-action-view" onclick="showFaqStatusModal(${i})">${r[5]==='已上架'?'下架':'上架'}</button> <button class="btn-action btn-action-ban" onclick="showFaqDeleteModal(${i})">删除</button></td></tr>`;
 }
 
 // FAQ 富文本编辑器命令
@@ -4212,11 +4123,12 @@ function showFaqModal(action, index) {
   var isEdit = action === 'edit';
   var data = isEdit ? window._faqRows[index] : null;
   var cats = (window._faqCats || []).map(function(c){ return c[1]; });
-  var catOptions = cats.map(function(c){ return '<option' + (isEdit && data[3] === c ? ' selected' : '') + '>' + c + '</option>'; }).join('');
+  var catOptions = cats.map(function(c){ return '<option' + (isEdit && data[4] === c ? ' selected' : '') + '>' + c + '</option>'; }).join('');
   overlay.innerHTML = '<div class="approve-modal" style="width:620px">'
     + '<div class="approve-modal-header"><span>' + (isEdit ? '编辑问答' : '添加问答') + '</span><button class="reject-modal-close" onclick="closeFaqModal()">&times;</button></div>'
     + '<div class="approve-modal-body">'
     + '<div style="margin-bottom:16px"><strong>问题（标题）：</strong><input id="faq-q-input" class="form-input" style="width:100%;margin-top:4px" value="' + (isEdit ? data[1] : '') + '" placeholder="请输入问题标题"></div>'
+    + '<div style="margin-bottom:16px"><strong>概述：</strong><textarea id="faq-summary-input" class="form-textarea" style="width:100%;height:56px;margin-top:4px" placeholder="请输入问答概述，列表中展示">' + (isEdit ? data[2] : '') + '</textarea></div>'
     + '<div style="margin-bottom:16px"><strong>答案（内容）：</strong><div class="rte-wrap" style="margin-top:4px">'
     + '<div class="rte-toolbar">'
     + '<button type="button" class="rte-btn" onclick="faqRteCmd(\'bold\')" title="加粗"><b>B</b></button>'
@@ -4233,11 +4145,11 @@ function showFaqModal(action, index) {
     + '<span class="rte-divider"></span>'
     + '<button type="button" class="rte-btn" onclick="faqRteCmd(\'removeFormat\')" title="清除格式">清除格式</button>'
     + '</div>'
-    + '<div class="rte-content" id="faq-rte-editor" contenteditable="true">' + (isEdit ? data[2] : '') + '</div>'
+    + '<div class="rte-content" id="faq-rte-editor" contenteditable="true">' + (isEdit ? data[3] : '') + '</div>'
     + '</div></div>'
     + '<div style="margin-bottom:16px"><strong>分类：</strong><select id="faq-cat-select" class="form-select" style="max-width:200px;margin-top:4px">' + catOptions + '</select></div>'
     + '<div style="margin-bottom:16px"><strong>排序：</strong><input id="faq-sort-input" type="number" class="form-input" style="max-width:120px;margin-top:4px" value="' + (isEdit ? (index + 1) : '') + '" min="1" placeholder="请输入排序"></div>'
-    + '<div style="margin-bottom:16px"><strong>状态：</strong><select id="faq-status-select" class="form-select" style="max-width:160px;margin-top:4px"><option' + (isEdit && data[4] === '已上架' ? ' selected' : '') + '>已上架</option><option' + (isEdit && data[4] === '已下架' ? ' selected' : '') + '>已下架</option></select></div>'
+    + '<div style="margin-bottom:16px"><strong>状态：</strong><select id="faq-status-select" class="form-select" style="max-width:160px;margin-top:4px"><option' + (isEdit && data[5] === '已上架' ? ' selected' : '') + '>已上架</option><option' + (isEdit && data[5] === '已下架' ? ' selected' : '') + '>已下架</option></select></div>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="saveFaqModal(' + (isEdit ? '\'edit\',' + index : '\'add\'') + ')">确认</button><button class="btn btn-default" onclick="closeFaqModal()">取消</button></div></div>';
   overlay.classList.add('show');
@@ -4245,9 +4157,10 @@ function showFaqModal(action, index) {
   if(ed) ed.focus();
 }
 
-// FAQ 保存问答（读取富文本内容写回数据并刷新表格）
+// FAQ 保存问答（读取概述和富文本内容写回数据并刷新表格）
 function saveFaqModal(action, index) {
   var q = document.getElementById('faq-q-input').value.trim();
+  var summary = document.getElementById('faq-summary-input').value.trim();
   var ans = document.getElementById('faq-rte-editor').innerHTML;
   var cat = document.getElementById('faq-cat-select').value;
   var sort = document.getElementById('faq-sort-input').value;
@@ -4256,18 +4169,20 @@ function saveFaqModal(action, index) {
     alert('请填写问题标题和答案内容');
     return;
   }
+  if(!summary) summary = ans.replace(/<[^>]*>/g, '').trim().slice(0, 80);
   var rows = window._faqRows;
   var now = new Date();
   function p(n){ return n < 10 ? '0' + n : '' + n; }
   var timeStr = now.getFullYear() + '-' + p(now.getMonth()+1) + '-' + p(now.getDate()) + ' ' + p(now.getHours()) + ':' + p(now.getMinutes());
   if(action === 'edit') {
     rows[index][1] = q;
-    rows[index][2] = ans;
-    rows[index][3] = cat;
-    rows[index][4] = status;
+    rows[index][2] = summary;
+    rows[index][3] = ans;
+    rows[index][4] = cat;
+    rows[index][5] = status;
   } else {
     var id = 'F' + String(rows.length + 1).padStart(3, '0');
-    rows.push([id, q, ans, cat, status, timeStr]);
+    rows.push([id, q, summary, ans, cat, status, timeStr]);
   }
   var tbody = document.getElementById('faq-tbody');
   if(tbody) tbody.innerHTML = rows.map(faqRowHtml).join('');
@@ -4283,12 +4198,15 @@ function showFaqStatusModal(index) {
     document.body.appendChild(overlay);
   }
   var data = window._faqRows[index];
-  var target = data[4] === '已上架' ? '已下架' : '已上架';
+  var target = data[5] === '已上架' ? '已下架' : '已上架';
   overlay.innerHTML = '<div class="approve-modal" style="width:420px">'
-    + '<div class="approve-modal-header"><span>' + (data[4] === '已上架' ? '下架问答' : '上架问答') + '</span><button class="reject-modal-close" onclick="closeFaqModal()">&times;</button></div>'
+    + '<div class="approve-modal-header"><span>' + (data[5] === '已上架' ? '下架问答' : '上架问答') + '</span><button class="reject-modal-close" onclick="closeFaqModal()">&times;</button></div>'
     + '<div class="approve-modal-body">'
-    + '<p style="margin:0 0 16px;font-size:13px">确定要将问答「' + data[1] + '」' + (data[4] === '已上架' ? '下架' : '上架') + '吗？</p>'
-    + '<div style="background:var(--bg);padding:12px;border-radius:6px;font-size:13px">' + data[1] + '</div>'
+    + '<p style="margin:0 0 16px;font-size:13px">确定要将问答「' + data[1] + '」' + (data[5] === '已上架' ? '下架' : '上架') + '吗？</p>'
+    + '<div style="background:var(--bg);padding:12px;border-radius:6px;font-size:13px;line-height:1.7">'
+    + '<div><strong>问题：</strong>' + data[1] + '</div>'
+    + '<div style="margin-top:8px"><strong>概述：</strong>' + data[2] + '</div>'
+    + '</div>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-primary" onclick="confirmFaqStatus(' + index + ')">确认' + target + '</button><button class="btn btn-default" onclick="closeFaqModal()">取消</button></div></div>';
   overlay.classList.add('show');
@@ -4297,7 +4215,7 @@ function showFaqStatusModal(index) {
 // FAQ 确认上架/下架
 function confirmFaqStatus(index) {
   var rows = window._faqRows;
-  rows[index][4] = rows[index][4] === '已上架' ? '已下架' : '已上架';
+  rows[index][5] = rows[index][5] === '已上架' ? '已下架' : '已上架';
   var tbody = document.getElementById('faq-tbody');
   if(tbody) tbody.innerHTML = rows.map(faqRowHtml).join('');
   closeFaqModal();
@@ -4316,7 +4234,10 @@ function showFaqDeleteModal(index) {
     + '<div class="approve-modal-header"><span>删除问答</span><button class="reject-modal-close" onclick="closeFaqModal()">&times;</button></div>'
     + '<div class="approve-modal-body">'
     + '<p style="margin:0 0 16px;font-size:13px">确定要删除问答「' + data[1] + '」吗？删除后不可恢复。</p>'
-    + '<div style="background:var(--bg);padding:12px;border-radius:6px;font-size:13px">' + data[1] + '</div>'
+    + '<div style="background:var(--bg);padding:12px;border-radius:6px;font-size:13px;line-height:1.7">'
+    + '<div><strong>问题：</strong>' + data[1] + '</div>'
+    + '<div style="margin-top:8px"><strong>概述：</strong>' + data[2] + '</div>'
+    + '</div>'
     + '</div>'
     + '<div class="approve-modal-footer"><button class="btn btn-danger" onclick="confirmFaqDelete(' + index + ')">确认删除</button><button class="btn btn-default" onclick="closeFaqModal()">取消</button></div></div>';
   overlay.classList.add('show');
@@ -4389,7 +4310,7 @@ PAGES['service-ticket'] = function() {
   var rows = [
     ['TK001','用户A','U100001','138****1111','充值未到账，已充值30元但余额没有增加','充值问题','2026-08-06 15:00','待回复'],
     ['TK002','用户C','U100003','137****3333','账号被禁用，无法登录，请求解封','账号问题','2026-08-06 14:00','待回复'],
-    ['TK003','用户F','U100005','135****5555','提现失败，第三方提示实名认证信息不一致','提现说明','2026-08-06 12:00','已回复'],
+    ['TK003','用户F','U100005','135****5555','提现失败，提示银行卡信息错误','提现说明','2026-08-06 12:00','已回复'],
     ['TK004','用户H','U100007','133****7777','礼物丢失，送的礼物没有到账','其他','2026-08-05 18:00','已关闭']
   ];
   window._ticketRows = rows;
@@ -5792,15 +5713,6 @@ PAGES['sys-log'] = function() {
     ['L004','admin','管理员','删除用户 U003','2026-08-10 11:15:08','成功','192.168.1.100'],
     ['L005','unknown','—','登录系统（密码错误）','2026-08-09 22:40:55','失败','203.0.113.5']
   ];
-  var balanceLogs = [];
-  Object.keys(window._memberOps).forEach(function(uid) {
-    var o = window._memberOps[uid];
-    (o.transactions || []).forEach(function(t) {
-      balanceLogs.push([t.id,'admin','管理员',escapeOpsText(t.action + ' · ' + (o.name || '用户') + '（' + uid + '） · ' + RECHARGE_UNITS[t.type] + ' ' + (t.amount > 0 ? '+' : '') + t.amount + ' · 余额 ' + t.balance + ' · 原因：' + (t.reason || '—')),t.time,'成功','—']);
-    });
-  });
-  balanceLogs.sort(function(a,b) { return b[4].localeCompare(a[4]) || b[0].localeCompare(a[0]); });
-  rows = balanceLogs.concat(rows);
   return `
   <div class="page-title">日志管理</div>
   <div class="page-desc">查看系统操作日志与登录日志</div>
@@ -6210,5 +6122,3 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
-
-
