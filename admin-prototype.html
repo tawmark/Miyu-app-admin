@@ -98,6 +98,14 @@ body {
 }
 .header-user { position: relative; display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .header-user-name { font-size: 13px; color: var(--ink-2); }
+.header-doc-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--primary); font-size: 13px; font-weight: 500;
+  text-decoration: none; margin-left: auto; flex-shrink: 0;
+  transition: color .15s;
+}
+.header-doc-link:hover { color: var(--primary-dark); text-decoration: underline; }
+.header-doc-link .icon { font-size: 14px; }
 .user-dropdown {
   position: absolute; right: 0; top: calc(100% + 8px); min-width: 180px;
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
@@ -500,6 +508,9 @@ tbody tr:last-child td { border-bottom: none; }
   <div class="main">
     <header class="header">
       <div class="header-breadcrumb" id="breadcrumb">后台管理 / <b>概览</b></div>
+      <a class="header-doc-link" href="https://github.com/tawmark/Miyu-app-admin/blob/main/%E8%9D%B6%E8%AF%ADAPP%E5%8A%9F%E8%83%BD%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3%E8%AF%B4%E6%98%8E%E4%B9%A6V1.0_%E4%BF%AE%E8%AE%A2%E7%89%88_20260915.md" target="_blank" rel="noopener noreferrer" title="查看需求文档">
+        <span class="icon">📄</span>查看需求文档
+      </a>
       <input class="header-search" placeholder="搜索功能、用户、订单...">
       <div class="header-user" onclick="toggleUserMenu(event)">
         <div class="header-avatar">管</div>
