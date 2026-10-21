@@ -1388,7 +1388,7 @@ PAGES['member-detail'] = function() {
     ['DM20260806002','通话收益','收入','+320','990','用户A (ID:10001)','与用户A通话 16分钟','2026-08-06 21:45:30'],
     ['DM20260806001','礼物收益','收入','+180','670','用户A (ID:10001)','收到 玫瑰 x9','2026-08-06 15:12:08'],
     ['DM20260805005','充值奖励','收入','+50','490','用户B (ID:10002)','邀请用户B充值奖励 #RO20260805002','2026-08-05 14:08:30'],
-    ['DM20260805004','提现奖励','收入','+30','440','用户F (ID:10006)','邀请用户F提现奖励 #WD20260805003','2026-08-05 13:25:10'],
+    ['DM20260805004','交易提成','收入','+30','440','用户F (ID:10006)','邀请用户F交易提成 #TX20260805003','2026-08-05 13:25:10'],
     ['DM20260805003','提现扣除','支出','-1,000','410','—','提现申请 #WD20260805002','2026-08-05 11:20:15'],
     ['DM20260805002','通话收益','收入','+260','1,410','用户C (ID:10003)','与用户C通话 13分钟','2026-08-05 20:15:42'],
     ['DM20260805001','礼物收益','收入','+350','1,150','用户G (ID:10007)','收到 蛋糕 x1','2026-08-04 19:30:55'],
@@ -1516,7 +1516,7 @@ PAGES['member-detail'] = function() {
       </div>
       ${filterBar([
         {type:'select',label:'收支类型',options:['收入','支出']},
-        {type:'select',label:'交易类型',options:['内部直充','平台补扣','通话收益','礼物收益','文字聊天','守护收益','提现扣除','充值奖励','提现奖励','系统赠送']},
+        {type:'select',label:'交易类型',options:['内部直充','平台补扣','通话收益','礼物收益','文字聊天','守护收益','提现扣除','充值奖励','交易提成','系统赠送']},
         {type:'date-range',label:'时间'},
       ])}
       <div class="table-wrapper">
@@ -1525,7 +1525,7 @@ PAGES['member-detail'] = function() {
           <tbody>
             ${diamondRows.map(r => `<tr>
               <td style="font-family:monospace;font-size:12px">${r[0]}</td>
-              <td>${badge(r[1], r[2]==='支出'?'danger':r[1]==='充值奖励'?'info':r[1]==='提现奖励'?'purple':r[1]==='守护收益'?'primary':'success')}</td>
+              <td>${badge(r[1], r[2]==='支出'?'danger':r[1]==='充值奖励'?'info':r[1]==='交易提成'?'purple':r[1]==='守护收益'?'primary':'success')}</td>
               <td>${r[2]==='收入' ? '<span style="color:var(--green)">收入</span>' : '<span style="color:var(--red)">支出</span>'}</td>
               <td style="font-weight:600;color:${r[2]==='收入'?'var(--green)':'var(--red)'}">${r[3]}</td>
               <td>${r[4]}</td>
@@ -3483,7 +3483,7 @@ PAGES['invite-record'] = function() {
     <div class="filter-bar" style="flex-wrap:wrap">
       <input class="form-input" style="width:180px" placeholder="邀请会员昵称/ID/手机号">
       <input class="form-input" style="width:180px" placeholder="被邀请会员昵称/ID/手机号">
-      <select><option>奖励类型</option><option>充值奖励</option><option>提现奖励</option></select>
+      <select><option>奖励类型</option><option>充值奖励</option><option>交易提成</option></select>
       <input type="date" class="form-input" style="width:140px" value="2026-08-01">
       <span style="color:var(--ink-3)">至</span>
       <input type="date" class="form-input" style="width:140px" value="2026-08-11">
@@ -3493,13 +3493,13 @@ PAGES['invite-record'] = function() {
   </div>
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>奖励编号</th><th>邀请会员</th><th>被邀请会员</th><th>奖励类型</th><th>钻石</th><th>时间</th></tr></thead>
+      <thead><tr><th>奖励编号</th><th>邀请会员</th><th>被邀请会员</th><th>关联订单号</th><th>奖励类型</th><th>钻石</th><th>时间</th></tr></thead>
       <tbody>
-        <tr><td style="font-family:monospace">IR20260806001</td><td>用户A (U100001) 138****1111</td><td>用户B (U100002) 139****2222</td><td>${badge('充值奖励','info')}</td><td>50 钻石</td><td>2026-08-06 14:32:08</td></tr>
-        <tr><td style="font-family:monospace">IR20260805001</td><td>用户A (U100001) 138****1111</td><td>用户D (U100004) 136****4444</td><td>${badge('充值奖励','info')}</td><td>50 钻石</td><td>2026-08-05 10:28:45</td></tr>
-        <tr><td style="font-family:monospace">IR20260804002</td><td>用户X (U100020) 135****9999</td><td>用户A (U100001) 138****1111</td><td>${badge('提现奖励','purple')}</td><td>30 钻石</td><td>2026-08-04 16:12:33</td></tr>
-        <tr><td style="font-family:monospace">IR20260804001</td><td>用户M (U100015) 133****5555</td><td>用户N (U100016) 132****6666</td><td>${badge('充值奖励','info')}</td><td>45 钻石</td><td>2026-08-04 09:05:12</td></tr>
-        <tr><td style="font-family:monospace">IR20260803001</td><td>用户A (U100001) 138****1111</td><td>用户P (U100018) 131****8888</td><td>${badge('提现奖励','purple')}</td><td>30 钻石</td><td>2026-08-03 20:41:59</td></tr>
+        <tr><td style="font-family:monospace">IR20260806001</td><td>用户A (U100001) 138****1111</td><td>用户B (U100002) 139****2222</td><td style="font-family:monospace"><a href="javascript:;" style="color:var(--primary);text-decoration:none">RO20260806001</a></td><td>${badge('充值奖励','info')}</td><td>50 钻石</td><td>2026-08-06 14:32:08</td></tr>
+        <tr><td style="font-family:monospace">IR20260805001</td><td>用户A (U100001) 138****1111</td><td>用户D (U100004) 136****4444</td><td style="font-family:monospace"><a href="javascript:;" style="color:var(--primary);text-decoration:none">RO20260805001</a></td><td>${badge('充值奖励','info')}</td><td>50 钻石</td><td>2026-08-05 10:28:45</td></tr>
+        <tr><td style="font-family:monospace">IR20260804002</td><td>用户X (U100020) 135****9999</td><td>用户A (U100001) 138****1111</td><td style="font-family:monospace"><a href="javascript:;" style="color:var(--primary);text-decoration:none">TX20260804002</a></td><td>${badge('交易提成','purple')}</td><td>30 钻石</td><td>2026-08-04 16:12:33</td></tr>
+        <tr><td style="font-family:monospace">IR20260804001</td><td>用户M (U100015) 133****5555</td><td>用户N (U100016) 132****6666</td><td style="font-family:monospace"><a href="javascript:;" style="color:var(--primary);text-decoration:none">RO20260804001</a></td><td>${badge('充值奖励','info')}</td><td>45 钻石</td><td>2026-08-04 09:05:12</td></tr>
+        <tr><td style="font-family:monospace">IR20260803001</td><td>用户A (U100001) 138****1111</td><td>用户P (U100018) 131****8888</td><td style="font-family:monospace"><a href="javascript:;" style="color:var(--primary);text-decoration:none">TX20260803001</a></td><td>${badge('交易提成','purple')}</td><td>30 钻石</td><td>2026-08-03 20:41:59</td></tr>
       </tbody>
     </table>
   </div>`;
